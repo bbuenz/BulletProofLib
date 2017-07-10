@@ -33,39 +33,45 @@ public class MultiRangeProofProver implements Prover<GeneratorParams, GeneratorV
         PeddersenBase base = parameter.getBase();
         int n = vectorBase.getGs().size();
         int bitsPerNumber = n / m;
-
+        //Bits
         FieldVector aL = FieldVector.from(VectorX.range(0, n).map(i -> numbers.get(i / bitsPerNumber).testBit(i % bitsPerNumber) ? BigInteger.ONE : BigInteger.ZERO));
+        //Bits -1
         FieldVector aR = aL.subtract(VectorX.fill(n, BigInteger.ONE));
         BigInteger alpha = ProofUtils.randomNumber();
         ECPoint a = vectorBase.commit(aL, aR, alpha);
         FieldVector sL = FieldVector.random(n);
         FieldVector sR = FieldVector.random(n);
         BigInteger rho = ProofUtils.randomNumber();
+        //Blinding values
         ECPoint s = vectorBase.commit(sL, sR, rho);
 
         ECPoint[] challengeArr = Stream.concat(commitments.stream(), Stream.of(a, s)).toArray(ECPoint[]::new);
         BigInteger y = ProofUtils.computeChallenge(challengeArr);
+        //y^n
         FieldVector ys = FieldVector.from(VectorX.iterate(n, BigInteger.ONE, y::multiply));
 
         BigInteger z = ProofUtils.challengeFromInts(y);
 
         BigInteger p = ECConstants.P;
+        //z^Q
         FieldVector zs = FieldVector.from(VectorX.iterate(m, z.pow(2), z::multiply).map(bi -> bi.mod(p)));
-
+        //2^n
         VectorX<BigInteger> twoVector = VectorX.iterate(bitsPerNumber, BigInteger.ONE, bi -> bi.shiftLeft(1));
         FieldVector twos = FieldVector.from(twoVector);
-        FieldVector twoTimesZSquared = FieldVector.from(zs.getVector().flatMap(twos::times));
+        //2^n \cdot z || 2^n \cdot z^2 ...
+        FieldVector twoTimesZs = FieldVector.from(zs.getVector().flatMap(twos::times));
+        //l(X)
         FieldVector l0 = aL.add(z.negate());
-
         FieldVector l1 = sL;
         FieldVectorPolynomial lPoly = new FieldVectorPolynomial(l0, l1);
-        FieldVector r0 = ys.haddamard(aR.add(z)).add(twoTimesZSquared);
+        //r(X)
+        FieldVector r0 = ys.haddamard(aR.add(z)).add(twoTimesZs);
         FieldVector r1 = sR.haddamard(ys);
         FieldVectorPolynomial rPoly = new FieldVectorPolynomial(r0, r1);
 
-
+        //t(X)
         FieldPolynomial tPoly = lPoly.innerProduct(rPoly);
-
+        //Commit(t)
         PolyCommittment polyCommittment = PolyCommittment.from(base, VectorX.of(tPoly.getCoefficients()));
         BigInteger x = ProofUtils.computeChallenge(polyCommittment.getCommitments());
         PeddersenCommitment mainCommitment = polyCommittment.evaluate(x);
@@ -80,10 +86,9 @@ public class MultiRangeProofProver implements Prover<GeneratorParams, GeneratorV
         GeneratorVector hPrimes = hs.haddamard(ys.invert());
         FieldVector l = lPoly.evaluate(x);
         FieldVector r = rPoly.evaluate(x);
-        FieldVector hExp = ys.times(z).add(twoTimesZSquared);
+        FieldVector hExp = ys.times(z).add(twoTimesZs);
         ECPoint P = a.add(s.multiply(x)).add(gs.sum().multiply(z.negate())).add(hPrimes.commit(hExp)).add(u.multiply(t)).subtract(base.h.multiply(mu));
         VectorBase primeBase = new VectorBase(gs, hPrimes, u);
-        ECPoint PAlt = primeBase.commit(l, r, t);
 
         InnerProductProver prover = new InnerProductProver();
         InnerProductWitness innerProductWitness = new InnerProductWitness(l, r);
