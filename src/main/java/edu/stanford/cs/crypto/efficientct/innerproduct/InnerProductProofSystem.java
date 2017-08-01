@@ -10,7 +10,7 @@ import org.bouncycastle.math.ec.ECPoint;
 /**
  * Created by buenz on 6/28/17.
  */
-public class InnerProductProofSystem implements ProofSystem<VectorBase,ECPoint,InnerProductWitness, InnerProductProof,InnerProductProver, InnerProductVerifier> {
+public class InnerProductProofSystem implements ProofSystem<VectorBase,ECPoint,InnerProductWitness, InnerProductProof,InnerProductProver, EfficientInnerProductVerifier> {
 
 
     @Override
@@ -19,8 +19,8 @@ public class InnerProductProofSystem implements ProofSystem<VectorBase,ECPoint,I
     }
 
     @Override
-    public InnerProductVerifier getVerifier() {
-        return new InnerProductVerifier();
+    public EfficientInnerProductVerifier getVerifier() {
+        return new EfficientInnerProductVerifier();
     }
 
     public VectorBase generatePublicParams(int size) {

@@ -63,7 +63,7 @@ public class MultiRangeProofProverTest {
 
         MultiRangeProofSystem system = new MultiRangeProofSystem();
 
-        GeneratorParams parameters = system.generateParams(16);
+        GeneratorParams parameters = system.generateParams(64);
         PeddersenBase base = parameters.getBase();
         GeneratorVector commitments = GeneratorVector.from(numbers.zip(randomness, base::commit));
         MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, randomness);
@@ -77,7 +77,7 @@ public class MultiRangeProofProverTest {
         MultiRangeProofVerifier multiRangeProofVerifier = new MultiRangeProofVerifier();
         multiRangeProofVerifier.verify(parameters, commitments, proof);
         multiRangeProofVerifier.verify(parameters, commitments, singlePRoof);
-
+        System.out.println(proof.serialize().length);
 
     }
 
@@ -120,9 +120,52 @@ public class MultiRangeProofProverTest {
         GeneratorVector commitments = GeneratorVector.from(numbers.zip(rs, parameters.getBase()::commit));
         MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, rs);
         RangeProof rangeProof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);
+        System.out.println(rangeProof.serialize().length);
+        System.out.println(rangeProof.numInts());
+        System.out.println(rangeProof.numElements());
+        System.out.println(32*(rangeProof.numElements()+rangeProof.numInts()));
+        System.out.println(32*(rangeProof.numElements()+rangeProof.numInts())+rangeProof.numElements());
+
         new MultiRangeProofVerifier().verify(parameters, commitments, rangeProof);
 
     }
+
+    @Test
+    public void testSix() throws VerificationFailedException {
+        MultiRangeProofSystem system = new MultiRangeProofSystem();
+
+        GeneratorParams parameters = system.generateParams(384);
+
+        VectorX<BigInteger> numbers = VectorX.generate(6, () -> ProofUtils.randomNumber(60)).materialize();
+
+        VectorX<BigInteger> rs = VectorX.generate(6, ProofUtils::randomNumber).materialize();
+
+        GeneratorVector commitments = GeneratorVector.from(numbers.zip(rs, parameters.getBase()::commit));
+        MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, rs);
+        RangeProof rangeProof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);
+        System.out.println(rangeProof.serialize().length);
+        new MultiRangeProofVerifier().verify(parameters, commitments, rangeProof);
+
+    }
+    @Test
+    public void testTwo() throws VerificationFailedException {
+        MultiRangeProofSystem system = new MultiRangeProofSystem();
+
+        GeneratorParams parameters = system.generateParams(128);
+
+        VectorX<BigInteger> numbers = VectorX.generate(2, () -> ProofUtils.randomNumber(60)).materialize();
+
+        VectorX<BigInteger> rs = VectorX.generate(2, ProofUtils::randomNumber).materialize();
+
+        GeneratorVector commitments = GeneratorVector.from(numbers.zip(rs, parameters.getBase()::commit));
+        MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, rs);
+        RangeProof rangeProof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);
+        System.out.println(rangeProof.serialize().length);
+        new MultiRangeProofVerifier().verify(parameters, commitments, rangeProof);
+
+    }
+
+
 
 
 }

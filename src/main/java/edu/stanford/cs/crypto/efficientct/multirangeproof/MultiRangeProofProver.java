@@ -13,10 +13,8 @@ import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
 import edu.stanford.cs.crypto.efficientct.rangeproof.RangeProof;
 import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.math.field.Polynomial;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 import java.util.stream.Stream;
 
 /**
@@ -48,7 +46,7 @@ public class MultiRangeProofProver implements Prover<GeneratorParams, GeneratorV
         ECPoint[] challengeArr = Stream.concat(commitments.stream(), Stream.of(a, s)).toArray(ECPoint[]::new);
         BigInteger y = ProofUtils.computeChallenge(challengeArr);
         //y^n
-        FieldVector ys = FieldVector.from(VectorX.iterate(n, BigInteger.ONE, y::multiply));
+        FieldVector ys = FieldVector.pow(y,n);
 
         BigInteger z = ProofUtils.challengeFromInts(y);
 
@@ -65,8 +63,8 @@ public class MultiRangeProofProver implements Prover<GeneratorParams, GeneratorV
         FieldVector l1 = sL;
         FieldVectorPolynomial lPoly = new FieldVectorPolynomial(l0, l1);
         //r(X)
-        FieldVector r0 = ys.haddamard(aR.add(z)).add(twoTimesZs);
-        FieldVector r1 = sR.haddamard(ys);
+        FieldVector r0 = ys.hadamard(aR.add(z)).add(twoTimesZs);
+        FieldVector r1 = sR.hadamard(ys);
         FieldVectorPolynomial rPoly = new FieldVectorPolynomial(r0, r1);
 
         //t(X)

@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 /**
  * Created by buenz on 6/29/17.
  */
-public class InnerProductVerifierTest {
+public class EfficientInnerProductVerifierTest {
     @Test
     public void testCompletness() throws Exception {
         InnerProductProofSystem system = new InnerProductProofSystem();
@@ -32,7 +32,7 @@ public class InnerProductVerifierTest {
         System.out.println(bs);
         System.out.println(c);
         InnerProductProof proof = prover.generateProof(parameters, vTot, witness);
-        InnerProductVerifier verifier = new InnerProductVerifier();
+        EfficientInnerProductVerifier verifier = new EfficientInnerProductVerifier();
         verifier.verify(parameters, vTot, proof);
 
     }
@@ -56,10 +56,41 @@ public class InnerProductVerifierTest {
         System.out.println(bs);
         System.out.println(c);
         InnerProductProof proof = prover.generateProof(parameters, vTot, witness);
+        EfficientInnerProductVerifier verifier = new EfficientInnerProductVerifier();
+        verifier.verify(parameters, vTot, proof);
+
+    }
+    @Test
+    public void testVerifier1() throws Exception {
+        InnerProductProofSystem system = new InnerProductProofSystem();
+        VectorBase parameters = system.generatePublicParams(1024);
+
+        FieldVector as = FieldVector.random(1024);
+        FieldVector bs =FieldVector.random(1024);
+        BigInteger c = as.innerPoduct(bs);
+        ECPoint vTot = parameters.commit(as, bs, c);
+        InnerProductWitness witness = new InnerProductWitness(as, bs);
+        InnerProductProver prover = system.getProver();
+        InnerProductProof proof = prover.generateProof(parameters, vTot, witness);
+        EfficientInnerProductVerifier verifier = new EfficientInnerProductVerifier();
+        verifier.verify(parameters, vTot, proof);
+
+    }
+    @Test
+    public void testVerifier2() throws Exception {
+        InnerProductProofSystem system = new InnerProductProofSystem();
+        VectorBase parameters = system.generatePublicParams(1024);
+
+        FieldVector as = FieldVector.random(1024);
+        FieldVector bs =FieldVector.random(1024);
+        BigInteger c = as.innerPoduct(bs);
+        ECPoint vTot = parameters.commit(as, bs, c);
+        InnerProductWitness witness = new InnerProductWitness(as, bs);
+        InnerProductProver prover = system.getProver();
+        InnerProductProof proof = prover.generateProof(parameters, vTot, witness);
         InnerProductVerifier verifier = new InnerProductVerifier();
         verifier.verify(parameters, vTot, proof);
 
     }
-
 
 }

@@ -31,13 +31,18 @@ public class InnerProductProver implements Prover<VectorBase, ECPoint, InnerProd
         }
         int nPrime = n / 2;
         FieldVector asLeft = as.subVector(0, nPrime);
-        FieldVector asRight = as.subVector(nPrime, n);
+        FieldVector asRight = as.subVector(nPrime, nPrime * 2);
         FieldVector bsLeft = bs.subVector(0, nPrime);
-        FieldVector bsRight = bs.subVector(nPrime, n);
-        GeneratorVector gLeft = base.getGs().subVector(0, nPrime);
-        GeneratorVector gRight = base.getGs().subVector(nPrime, n);
-        GeneratorVector hLeft = base.getHs().subVector(0, nPrime);
-        GeneratorVector hRight = base.getHs().subVector(nPrime, n);
+        FieldVector bsRight = bs.subVector(nPrime, nPrime * 2);
+
+        GeneratorVector gs = base.getGs();
+        GeneratorVector gLeft = gs.subVector(0, nPrime);
+        GeneratorVector gRight = gs.subVector(nPrime, nPrime * 2);
+
+        GeneratorVector hs = base.getHs();
+        GeneratorVector hLeft = hs.subVector(0, nPrime);
+        GeneratorVector hRight = hs.subVector(nPrime, nPrime * 2);
+
         BigInteger cL = asLeft.innerPoduct(bsRight);
         BigInteger cR = asRight.innerPoduct(bsLeft);
         ECPoint L = gRight.commit(asLeft).add(hLeft.commit(bsRight));
@@ -59,9 +64,22 @@ public class InnerProductProver implements Prover<VectorBase, ECPoint, InnerProd
         GeneratorVector hPrime = hLeft.haddamard(xs).add(hRight.haddamard(xInverse));
         FieldVector aPrime = asLeft.times(x).add(asRight.times(xInv));
         FieldVector bPrime = bsLeft.times(xInv).add(bsRight.times(x));
+        if(n%2==1){
+            gPrime=gPrime.plus(gs.get(n-1));
+            hPrime=hPrime.plus(hs.get(n-1));
+           aPrime= aPrime.plus(as.get(n-1));
+           bPrime= bPrime.plus(bs.get(n-1));
+
+        }
 
         ECPoint cPrime = L.multiply(xSquare).add(R.multiply(xInvSquare)).add(c);
         VectorBase basePrime = new VectorBase(gPrime, hPrime, v);
+        //System.out.println("c "+ aPrime.innerPoduct(bPrime).mod(ECConstants.P));
+        //System.out.println("calt "+asLeft.innerPoduct(bsRight).multiply(xSquare).add(asRight.innerPoduct(bsLeft).multiply(xInvSquare)).add(as.innerPoduct(bs)).mod(ECConstants.P));
+        //System.out.println("X " + x);
+        //System.out.println("Xinv " + xInv);
+        //System.out.println("C " +cPrime.normalize());
+        //System.out.println("C alt" +gPrime.commit(aPrime).add(hPrime.commit(bPrime).add(v.multiply(aPrime.innerPoduct(bPrime)))).normalize());
         return generateProof(basePrime, cPrime, aPrime, bPrime, ls, rs);
     }
 

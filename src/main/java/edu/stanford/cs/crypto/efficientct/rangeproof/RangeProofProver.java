@@ -52,8 +52,8 @@ public class RangeProofProver implements Prover<GeneratorParams, ECPoint, RangeP
 
         FieldVector l1 = sL;
         FieldVector twoTimesZSquared = twos.times(zSquared);
-        FieldVector r0 = ys.haddamard(aR.add(z)).add(twoTimesZSquared);
-        FieldVector r1 = sR.haddamard(ys);
+        FieldVector r0 = ys.hadamard(aR.add(z)).add(twoTimesZSquared);
+        FieldVector r1 = sR.hadamard(ys);
         BigInteger k = ys.sum().multiply(z.subtract(zSquared)).subtract(zCubed.shiftLeft(n).subtract(zCubed));
         BigInteger t0 = k.add(zSquared.multiply(number));
         BigInteger t1 = l1.innerPoduct(r0).add(l0.innerPoduct(r1));

@@ -31,55 +31,54 @@
 
 package edu.stanford.cs.crypto;
 
-import cyclops.collections.immutable.VectorX;
-import edu.stanford.cs.crypto.efficientct.GeneratorParams;
-import edu.stanford.cs.crypto.efficientct.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
-import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
-import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofProver;
-import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofSystem;
-import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofVerifier;
-import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofWitness;
-import edu.stanford.cs.crypto.efficientct.rangeproof.RangeProof;
+import edu.stanford.cs.crypto.efficientct.innerproduct.*;
+import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
+import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
+import org.bouncycastle.math.ec.ECPoint;
 import org.openjdk.jmh.annotations.*;
 
-import java.math.BigInteger;
-
 @State(Scope.Benchmark)
-public class MultiProofBenchmark {
-    private final MultiRangeProofSystem rangeProofSystem = new MultiRangeProofSystem();
-    private final MultiRangeProofProver prover = new MultiRangeProofProver();
-    private final GeneratorParams generatorParams = rangeProofSystem.generateParams(1024);
-    private GeneratorVector commitments;
-    private MultiRangeProofWitness witness;
-    private RangeProof oneProof;
-    private MultiRangeProofVerifier verifier=new MultiRangeProofVerifier();
+public class InnerProductBenchmark {
+    private final InnerProductProofSystem rangeProofSystem = new InnerProductProofSystem();
+    private final InnerProductProver prover = new InnerProductProver();
+    private final VectorBase generatorParams = rangeProofSystem.generatePublicParams(1024);
+    private ECPoint commitment;
+    private InnerProductWitness witness;
+    private InnerProductProof oneProof;
+    private EfficientInnerProductVerifier verifier1 = new EfficientInnerProductVerifier();
+    private InnerProductVerifier verifier2 = new InnerProductVerifier();
+
     @Setup
     public void setUp() {
-        VectorX<BigInteger> numbers = VectorX.generate(16, () -> ProofUtils.randomNumber(60)).materialize();
-
-        VectorX<BigInteger> rs = VectorX.generate(16, ProofUtils::randomNumber).materialize();
-
-        commitments = GeneratorVector.from(numbers.zip(rs, generatorParams.getBase()::commit));
-        this.witness = new MultiRangeProofWitness(numbers, rs);
-        oneProof=testProving();
+        FieldVector as = FieldVector.random(1024);
+        FieldVector bs = FieldVector.random(1024);
+        witness = new InnerProductWitness(as, bs);
+        commitment = generatorParams.commit(as, bs, as.innerPoduct(bs));
+        oneProof = testProving();
     }
 
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
-    public RangeProof testProving() {
-        return prover.generateProof(generatorParams, commitments, witness);
+    public InnerProductProof testProving() {
+        return prover.generateProof(generatorParams, commitment, witness);
         // This is a demo/sample template for building your JMH benchmarks. Edit as needed.
         // Put your benchmark code here.
     }
 
     @Benchmark
     @BenchmarkMode(Mode.AverageTime)
-    public void testVerifying() throws VerificationFailedException {
-         verifier.verify(generatorParams, commitments, oneProof);
+    public void testVerifying1() throws VerificationFailedException {
+        verifier1.verify(generatorParams, commitment, oneProof);
         // This is a demo/sample template for building your JMH benchmarks. Edit as needed.
         // Put your benchmark code here.
     }
-
+    @Benchmark
+    @BenchmarkMode(Mode.AverageTime)
+    public void testVerifying2() throws VerificationFailedException {
+        verifier2.verify(generatorParams, commitment, oneProof);
+        // This is a demo/sample template for building your JMH benchmarks. Edit as needed.
+        // Put your benchmark code here.
+    }
 
 }

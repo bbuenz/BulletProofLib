@@ -48,17 +48,17 @@ public class CircuitProver implements Prover<GeneratorParams, ArithmeticCircuit,
         BigInteger p = ECConstants.P;
         FieldVector zs = FieldVector.from(VectorX.iterate(q, z, z::multiply).map(bi -> bi.mod(p)));
 
-        FieldVector zRWeights = ys.invert().haddamard(zs.haddamard(circuit.getrWeights()));
+        FieldVector zRWeights = ys.invert().hadamard(zs.vectorMatrixProduct(circuit.getrWeights()));
+        FieldVector zLWeights = zs.vectorMatrixProduct(circuit.getlWeights());
+
         FieldVector l1 = aL.add(zRWeights);
         FieldVector l2 = o;
         FieldVector l3 = sL;
         FieldVectorPolynomial lPoly = new FieldVectorPolynomial(null, l1, l2, l3);
-        FieldVector r0 = zs.haddamard(circuit.getoWeights());
-        FieldVector zLWeights = zs.haddamard(circuit.getlWeights());
-        FieldVector r1 = ys.haddamard(aR).add(zLWeights);
-        FieldVector r3 = sR.haddamard(ys);
+        FieldVector r0 = zs.vectorMatrixProduct(circuit.getoWeights()).add(ys.times(BigInteger.ONE.negate()));
+        FieldVector r1 = ys.hadamard(aR).add(zLWeights);
+        FieldVector r3 = sR.hadamard(ys);
         FieldVectorPolynomial rPoly = new FieldVectorPolynomial(r0, r1, null, r3);
-        BigInteger k = zLWeights.innerPoduct(zRWeights);
 
         FieldPolynomial tPoly = lPoly.innerProduct(rPoly);
 
@@ -77,7 +77,7 @@ public class CircuitProver implements Prover<GeneratorParams, ArithmeticCircuit,
         GeneratorVector hPrimes = hs.haddamard(ys.invert());
         FieldVector l = lPoly.evaluate(x);
         FieldVector r = rPoly.evaluate(x);
-        FieldVector gExp = ys.haddamard(circuit.getrWeights().zip(zs, FieldVector::times).reduce(FieldVector::add).get());
+        FieldVector gExp = ys.hadamard(circuit.getrWeights().zip(zs, FieldVector::times).reduce(FieldVector::add).get());
         FieldVector hExp = circuit.getlWeights().zip(circuit.getoWeights(),FieldVector::add).zip(zs, FieldVector::times).reduce(FieldVector::add).get();
         ECPoint P = aI.multiply(x).add(aO).add(s.multiply(x.pow(3))).add(gs.commit(gExp)).add(hPrimes.commit(hExp)).add(u.multiply(t)).subtract(base.h.multiply(mu));
         VectorBase primeBase = new VectorBase(gs, hPrimes, u);

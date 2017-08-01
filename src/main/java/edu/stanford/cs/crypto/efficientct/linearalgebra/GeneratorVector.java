@@ -56,7 +56,7 @@ public class GeneratorVector implements Iterable<ECPoint> {
     }
 
     public Stream<ECPoint> stream() {
-       return gs.stream();
+        return gs.stream();
     }
 
     @Override
@@ -76,5 +76,9 @@ public class GeneratorVector implements Iterable<ECPoint> {
     @Override
     public Iterator<ECPoint> iterator() {
         return gs.iterator();
+    }
+
+    public GeneratorVector plus(ECPoint other) {
+        return from(gs.plus(other));
     }
 }

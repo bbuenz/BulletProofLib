@@ -30,20 +30,31 @@ public class FieldVector implements Iterable<BigInteger> {
     }
 
     public static FieldVector random(int n) {
-        return from(VectorX.generate(n, ProofUtils::randomNumber));
+        return from(VectorX.generate(n, ProofUtils::randomNumber).materialize());
     }
 
-
+    /**
+     * @param b
+     * @return &lt;this,b&gt;
+     */
     public BigInteger innerPoduct(Iterable<BigInteger> b) {
         return a.zip(b, BigInteger::multiply).reduce(Monoids.bigIntSum).mod(q);
     }
 
-    public FieldVector haddamard(Iterable<BigInteger> b) {
+    /**
+     * @param b
+     * @return this \circ b
+     */
+    public FieldVector hadamard(Iterable<BigInteger> b) {
 
         return from(a.zip(b, BigInteger::multiply).map(bi -> bi.mod(q)));
     }
 
-    public FieldVector haddamard(VectorX<FieldVector> b) {
+    /**
+     * @param b
+     * @return \sum_{i=1}^n b_i \cdot a_i
+     */
+    public FieldVector vectorMatrixProduct(VectorX<FieldVector> b) {
         return b.zip(a, FieldVector::times).reduce(FieldVector::add).get();
     }
 
@@ -92,6 +103,14 @@ public class FieldVector implements Iterable<BigInteger> {
 
     public VectorX<BigInteger> getVector() {
         return a;
+    }
+
+    public FieldVector plus(BigInteger other) {
+        return from(a.plus(other));
+    }
+
+    public static FieldVector pow(BigInteger k, int n) {
+        return FieldVector.from(VectorX.iterate(n, BigInteger.ONE, k::multiply));
     }
 
     @Override

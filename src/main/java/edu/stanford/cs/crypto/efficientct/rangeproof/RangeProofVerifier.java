@@ -2,7 +2,7 @@ package edu.stanford.cs.crypto.efficientct.rangeproof;
 
 import cyclops.collections.immutable.VectorX;
 import edu.stanford.cs.crypto.efficientct.*;
-import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductVerifier;
+import edu.stanford.cs.crypto.efficientct.innerproduct.EfficientInnerProductVerifier;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
@@ -23,7 +23,7 @@ public class RangeProofVerifier implements Verifier<GeneratorParams, ECPoint, Ra
         VectorBase vectorBase = params.getVectorBase();
         PeddersenBase base = params.getBase();
         int n = vectorBase.getGs().size();
-        ECPoint a = proof.getA();
+        ECPoint a = proof.getaI();
         ECPoint s = proof.getS();
 
         BigInteger y = ProofUtils.computeChallenge(input, a, s);
@@ -59,7 +59,7 @@ public class RangeProofVerifier implements Verifier<GeneratorParams, ECPoint, Ra
        // System.out.println("YVerify" +y);
        // System.out.println("ZVerify" +z);
        // System.out.println("uVerify" +u);
-        InnerProductVerifier verifier = new InnerProductVerifier();
+        EfficientInnerProductVerifier verifier = new EfficientInnerProductVerifier();
         verifier.verify(primeBase, P, proof.getProductProof());
 
     }
