@@ -1,6 +1,7 @@
 package edu.stanford.cs.crypto.efficientct.commitments;
 
-import edu.stanford.cs.crypto.efficientct.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import org.bouncycastle.math.ec.ECPoint;
 
@@ -15,10 +16,15 @@ public class PeddersenCommitment implements HomomorphicCommitment<PeddersenCommi
     private final BigInteger r;
     private final BigInteger q = ECConstants.P;
     private ECPoint commitment;
+
     public PeddersenCommitment(PeddersenBase base, BigInteger x, BigInteger r) {
         this.base = base;
         this.x = x;
         this.r = r;
+    }
+
+    public PeddersenCommitment(PeddersenBase base, BigInteger x) {
+        this(base, x, ProofUtils.randomNumber());
     }
 
     @Override
@@ -43,9 +49,10 @@ public class PeddersenCommitment implements HomomorphicCommitment<PeddersenCommi
     public BigInteger getR() {
         return r;
     }
-    public ECPoint getCommitment(){
-        if(commitment==null){
-            commitment=base.commit(x,r);
+
+    public ECPoint getCommitment() {
+        if (commitment == null) {
+            commitment = base.commit(x, r);
         }
         return commitment;
     }

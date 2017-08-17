@@ -1,10 +1,8 @@
 package edu.stanford.cs.crypto.efficientct;
 
-import cyclops.stream.ReactiveSeq;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
 
 import java.math.BigInteger;
-import java.util.Arrays;
-import java.util.function.Predicate;
 
 /**
  * Created by buenz on 7/7/17.

@@ -2,16 +2,14 @@ package edu.stanford.cs.crypto.efficientct.rangeproof;
 
 import cyclops.collections.immutable.VectorX;
 import edu.stanford.cs.crypto.efficientct.GeneratorParams;
-import edu.stanford.cs.crypto.efficientct.ProofUtils;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
-import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
+import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofProver;
 import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofSystem;
 import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofVerifier;
-import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofWitness;
-import org.bouncycastle.math.ec.ECPoint;
 import org.junit.Test;
 
 import java.math.BigInteger;
@@ -23,16 +21,12 @@ import java.math.BigInteger;
 public class MultiRangeProofProverTest {
     @Test
     public void testCompletness() throws VerificationFailedException {
-        VectorX<BigInteger> numbers = VectorX.of(BigInteger.valueOf(3), BigInteger.valueOf(123));
-        VectorX<BigInteger> randomness = VectorX.generate(2, ProofUtils::randomNumber).materialize();
 
+        GeneratorParams parameters = GeneratorParams.generateParams(16);
 
-        MultiRangeProofSystem system = new MultiRangeProofSystem();
-
-        GeneratorParams parameters = system.generateParams(16);
         PeddersenBase base = parameters.getBase();
-        GeneratorVector commitments = GeneratorVector.from(numbers.zip(randomness, base::commit));
-        MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, randomness);
+        VectorX<PeddersenCommitment> witness = VectorX.of(BigInteger.valueOf(3), BigInteger.valueOf(123)).map(x -> new PeddersenCommitment(base, x)).materialize();
+        GeneratorVector commitments = GeneratorVector.from(witness.map(PeddersenCommitment::getCommitment));
         RangeProof proof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);
         MultiRangeProofVerifier verifier = new MultiRangeProofVerifier();
         verifier.verify(parameters, commitments, proof);
@@ -40,36 +34,28 @@ public class MultiRangeProofProverTest {
 
     @Test(expected = VerificationFailedException.class)
     public void testSoundness() throws VerificationFailedException {
-        VectorX<BigInteger> numbers = VectorX.of(BigInteger.valueOf(3), BigInteger.valueOf(256));
-        VectorX<BigInteger> randomness = VectorX.generate(2, ProofUtils::randomNumber).materialize();
 
+        GeneratorParams parameters = GeneratorParams.generateParams(16);
 
-        MultiRangeProofSystem system = new MultiRangeProofSystem();
-
-        GeneratorParams parameters = system.generateParams(16);
         PeddersenBase base = parameters.getBase();
-        GeneratorVector commitments = GeneratorVector.from(numbers.zip(randomness, base::commit));
-        MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, randomness);
+        VectorX<PeddersenCommitment> witness = VectorX.of(BigInteger.valueOf(3), BigInteger.valueOf(256)).map(x -> new PeddersenCommitment(base, x)).materialize();
+        GeneratorVector commitments = GeneratorVector.from(witness.map(PeddersenCommitment::getCommitment));
         RangeProof proof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);
         MultiRangeProofVerifier verifier = new MultiRangeProofVerifier();
         verifier.verify(parameters, commitments, proof);
+
     }
 
     @Test
     public void testAgainstSingleProof() throws VerificationFailedException {
-        VectorX<BigInteger> numbers = VectorX.of(BigInteger.valueOf(123));
-        VectorX<BigInteger> randomness = VectorX.of(ProofUtils.randomNumber());
 
 
-        MultiRangeProofSystem system = new MultiRangeProofSystem();
-
-        GeneratorParams parameters = system.generateParams(64);
+        GeneratorParams parameters = GeneratorParams.generateParams(64);
         PeddersenBase base = parameters.getBase();
-        GeneratorVector commitments = GeneratorVector.from(numbers.zip(randomness, base::commit));
-        MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, randomness);
-        RangeProofWitness singleProofWitness = new RangeProofWitness(numbers.get(0), randomness.get(0));
+        VectorX<PeddersenCommitment> witness = VectorX.of(new PeddersenCommitment(base, BigInteger.valueOf(123))).materialize();
+        GeneratorVector commitments = GeneratorVector.from(witness.map(PeddersenCommitment::getCommitment));
         RangeProof proof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);
-        RangeProof singlePRoof = new RangeProofProver().generateProof(parameters, commitments.get(0), singleProofWitness);
+        RangeProof singlePRoof = new RangeProofProver().generateProof(parameters, commitments.get(0), witness.get(0));
         RangeProofVerifier verifier = new RangeProofVerifier();
         verifier.verify(parameters, commitments.get(0), singlePRoof);
 
@@ -84,18 +70,13 @@ public class MultiRangeProofProverTest {
     @Test
     public void testAgainstSingleProof100Times() throws VerificationFailedException {
         MultiRangeProofSystem system = new MultiRangeProofSystem();
-        GeneratorParams parameters = system.generateParams(16);
+        GeneratorParams parameters = GeneratorParams.generateParams(16);
         PeddersenBase base = parameters.getBase();
         for (int i = 0; i < 100; ++i) {
-            VectorX<BigInteger> numbers = VectorX.of(ProofUtils.randomNumber(8));
-            VectorX<BigInteger> randomness = VectorX.of(ProofUtils.randomNumber());
-
-
-            GeneratorVector commitments = GeneratorVector.from(numbers.zip(randomness, base::commit));
-            MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, randomness);
-            RangeProofWitness singleProofWitness = new RangeProofWitness(numbers.get(0), randomness.get(0));
+            VectorX<PeddersenCommitment> witness = VectorX.of(new PeddersenCommitment(base, ProofUtils.randomNumber(8))).materialize();
+            GeneratorVector commitments = GeneratorVector.from(witness.map(PeddersenCommitment::getCommitment));
             RangeProof proof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);
-            RangeProof singlePRoof = new RangeProofProver().generateProof(parameters, commitments.get(0), singleProofWitness);
+            RangeProof singlePRoof = new RangeProofProver().generateProof(parameters, commitments.get(0), witness.get(0));
             RangeProofVerifier verifier = new RangeProofVerifier();
             verifier.verify(parameters, commitments.get(0), singlePRoof);
 
@@ -111,20 +92,18 @@ public class MultiRangeProofProverTest {
     public void testSixTeenProofs() throws VerificationFailedException {
         MultiRangeProofSystem system = new MultiRangeProofSystem();
 
-        GeneratorParams parameters = system.generateParams(1024);
+        GeneratorParams parameters = GeneratorParams.generateParams(1024);
 
-        VectorX<BigInteger> numbers = VectorX.generate(16, () -> ProofUtils.randomNumber(60)).materialize();
+        VectorX<PeddersenCommitment> witness = VectorX.generate(16, () -> ProofUtils.randomNumber(60)).map(x->new PeddersenCommitment(parameters.getBase(),x)).materialize();
 
-        VectorX<BigInteger> rs = VectorX.generate(16, ProofUtils::randomNumber).materialize();
 
-        GeneratorVector commitments = GeneratorVector.from(numbers.zip(rs, parameters.getBase()::commit));
-        MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, rs);
+        GeneratorVector commitments = GeneratorVector.from(witness.map(PeddersenCommitment::getCommitment));
         RangeProof rangeProof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);
         System.out.println(rangeProof.serialize().length);
         System.out.println(rangeProof.numInts());
         System.out.println(rangeProof.numElements());
-        System.out.println(32*(rangeProof.numElements()+rangeProof.numInts()));
-        System.out.println(32*(rangeProof.numElements()+rangeProof.numInts())+rangeProof.numElements());
+        System.out.println(32 * (rangeProof.numElements() + rangeProof.numInts()));
+        System.out.println(32 * (rangeProof.numElements() + rangeProof.numInts()) + rangeProof.numElements());
 
         new MultiRangeProofVerifier().verify(parameters, commitments, rangeProof);
 
@@ -134,38 +113,30 @@ public class MultiRangeProofProverTest {
     public void testSix() throws VerificationFailedException {
         MultiRangeProofSystem system = new MultiRangeProofSystem();
 
-        GeneratorParams parameters = system.generateParams(384);
+        GeneratorParams parameters = GeneratorParams.generateParams(384);
+        VectorX<PeddersenCommitment> witness = VectorX.generate(6, () -> ProofUtils.randomNumber(60)).map(x->new PeddersenCommitment(parameters.getBase(),x)).materialize();
 
-        VectorX<BigInteger> numbers = VectorX.generate(6, () -> ProofUtils.randomNumber(60)).materialize();
 
-        VectorX<BigInteger> rs = VectorX.generate(6, ProofUtils::randomNumber).materialize();
-
-        GeneratorVector commitments = GeneratorVector.from(numbers.zip(rs, parameters.getBase()::commit));
-        MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, rs);
+        GeneratorVector commitments = GeneratorVector.from(witness.map(PeddersenCommitment::getCommitment));
         RangeProof rangeProof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);
         System.out.println(rangeProof.serialize().length);
         new MultiRangeProofVerifier().verify(parameters, commitments, rangeProof);
 
     }
+
     @Test
     public void testTwo() throws VerificationFailedException {
         MultiRangeProofSystem system = new MultiRangeProofSystem();
 
-        GeneratorParams parameters = system.generateParams(128);
+        GeneratorParams parameters = GeneratorParams.generateParams(128);
+        VectorX<PeddersenCommitment> witness = VectorX.generate(2, () -> ProofUtils.randomNumber(60)).map(x->new PeddersenCommitment(parameters.getBase(),x)).materialize();
 
-        VectorX<BigInteger> numbers = VectorX.generate(2, () -> ProofUtils.randomNumber(60)).materialize();
 
-        VectorX<BigInteger> rs = VectorX.generate(2, ProofUtils::randomNumber).materialize();
-
-        GeneratorVector commitments = GeneratorVector.from(numbers.zip(rs, parameters.getBase()::commit));
-        MultiRangeProofWitness witness = new MultiRangeProofWitness(numbers, rs);
-        RangeProof rangeProof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);
-        System.out.println(rangeProof.serialize().length);
+        GeneratorVector commitments = GeneratorVector.from(witness.map(PeddersenCommitment::getCommitment));
+        RangeProof rangeProof = new MultiRangeProofProver().generateProof(parameters, commitments, witness);        System.out.println(rangeProof.serialize().length);
         new MultiRangeProofVerifier().verify(parameters, commitments, rangeProof);
 
     }
-
-
 
 
 }

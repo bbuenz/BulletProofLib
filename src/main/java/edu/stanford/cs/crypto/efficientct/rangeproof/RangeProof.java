@@ -1,6 +1,6 @@
 package edu.stanford.cs.crypto.efficientct.rangeproof;
 
-import edu.stanford.cs.crypto.efficientct.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
 import edu.stanford.cs.crypto.efficientct.Proof;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductProof;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;

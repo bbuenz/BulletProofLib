@@ -8,6 +8,8 @@ import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
 import edu.stanford.cs.crypto.efficientct.rangeproof.RangeProof;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;
@@ -55,8 +57,9 @@ public class MultiRangeProofVerifier implements Verifier<GeneratorParams, Genera
         ECPoint rhs = tCommits.commit(Arrays.asList(x, x.pow(2).mod(ECConstants.P))).add(commitments.commit(zs)).add(base.commit(k, BigInteger.ZERO));
         equal(lhs, rhs, "Polynomial identity check failed, LHS: %s, RHS %s");
 
-        ECPoint u = ProofUtils.fromSeed(ProofUtils.challengeFromInts(tauX, mu, t));
-        GeneratorVector hs = vectorBase.getHs();
+
+        BigInteger uChallenge = ProofUtils.challengeFromInts(tauX, mu, t);
+        ECPoint u = base.g.multiply(uChallenge);        GeneratorVector hs = vectorBase.getHs();
         GeneratorVector gs = vectorBase.getGs();
         GeneratorVector hPrimes = hs.haddamard(ys.invert());
         FieldVector hExp = ys.times(z).add(twoTimesZSquared);

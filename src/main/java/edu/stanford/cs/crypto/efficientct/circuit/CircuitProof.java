@@ -1,6 +1,5 @@
 package edu.stanford.cs.crypto.efficientct.circuit;
 
-import edu.stanford.cs.crypto.efficientct.commitments.PolyCommittment;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductProof;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.rangeproof.RangeProof;

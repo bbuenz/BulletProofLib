@@ -1,8 +1,8 @@
 package edu.stanford.cs.crypto.efficientct.innerproduct;
 
 import cyclops.collections.mutable.ListX;
-import edu.stanford.cs.crypto.efficientct.ECConstants;
-import edu.stanford.cs.crypto.efficientct.ProofUtils;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.Prover;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
@@ -64,11 +64,11 @@ public class InnerProductProver implements Prover<VectorBase, ECPoint, InnerProd
         GeneratorVector hPrime = hLeft.haddamard(xs).add(hRight.haddamard(xInverse));
         FieldVector aPrime = asLeft.times(x).add(asRight.times(xInv));
         FieldVector bPrime = bsLeft.times(xInv).add(bsRight.times(x));
-        if(n%2==1){
-            gPrime=gPrime.plus(gs.get(n-1));
-            hPrime=hPrime.plus(hs.get(n-1));
-           aPrime= aPrime.plus(as.get(n-1));
-           bPrime= bPrime.plus(bs.get(n-1));
+        if (n % 2 == 1) {
+            gPrime = gPrime.plus(gs.get(n - 1));
+            hPrime = hPrime.plus(hs.get(n - 1));
+            aPrime = aPrime.plus(as.get(n - 1));
+            bPrime = bPrime.plus(bs.get(n - 1));
 
         }
 

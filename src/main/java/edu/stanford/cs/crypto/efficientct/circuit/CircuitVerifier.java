@@ -7,10 +7,11 @@ import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;
-import java.util.Arrays;
 
 /**
  * Created by buenz on 7/6/17.
@@ -19,7 +20,8 @@ public class CircuitVerifier implements Verifier<GeneratorParams, ArithmeticCirc
 
     @Override
     public void verify(GeneratorParams parameter, ArithmeticCircuit circuit, CircuitProof proof) throws VerificationFailedException {
-        int q = circuit.getCommitments().size();
+        int m = circuit.getCommitments().size();
+        int q = circuit.getlWeights().size();
         VectorBase vectorBase = parameter.getVectorBase();
         PeddersenBase base = parameter.getBase();
         int n = vectorBase.getGs().size();
@@ -38,6 +40,7 @@ public class CircuitVerifier implements Verifier<GeneratorParams, ArithmeticCirc
         FieldVector zs = FieldVector.from(VectorX.iterate(q, z, z::multiply).map(bi -> bi.mod(p)));
         FieldVector zRWeights = ys.invert().hadamard(zs.vectorMatrixProduct(circuit.getrWeights()));
         FieldVector zLWeights = zs.vectorMatrixProduct(circuit.getlWeights());
+        FieldVector zOWeights = zs.vectorMatrixProduct(circuit.getoWeights());
 
         GeneratorVector tCommits = proof.gettCommits();
         BigInteger x = ProofUtils.computeChallenge(tCommits);
@@ -48,22 +51,23 @@ public class CircuitVerifier implements Verifier<GeneratorParams, ArithmeticCirc
         BigInteger mu = proof.getMu();
         BigInteger t = proof.getT();
         ECPoint lhs = base.commit(t, tauX);
-        ECPoint rhs = tCommits.commit(Arrays.asList(x, x.pow(2).mod(ECConstants.P))).add(tCommits.commit(zs)).add(base.commit(k, BigInteger.ZERO));
+        BigInteger cQ = zs.innerPoduct(circuit.getCs());
+        VectorX<BigInteger> xs = VectorX.iterate(4, x.pow(3), x::multiply).prepend(x);
+        BigInteger xSquared = x.pow(2).mod(p);
+        ECPoint vZ = circuit.getCommitments().commit(zs.vectorMatrixProduct(circuit.getCommitmentWeights()).times(xSquared));
+        ECPoint rhs = tCommits.commit(xs).add(base.commit(k.add(cQ).multiply(xSquared), BigInteger.ZERO)).add(vZ);
         equal(lhs, rhs, "Polynomial identity check failed, LHS: %s, RHS %s");
 
-        ECPoint u = ProofUtils.fromSeed(ProofUtils.challengeFromInts(tauX, mu, t));
+
+        BigInteger uChallenge = ProofUtils.challengeFromInts(tauX, mu, t);
+        ECPoint u = base.g.multiply(uChallenge);
         GeneratorVector hs = vectorBase.getHs();
         GeneratorVector gs = vectorBase.getGs();
         GeneratorVector hPrimes = hs.haddamard(ys.invert());
-        FieldVector gExp = ys.hadamard(circuit.getrWeights().zip(zs, FieldVector::times).reduce(FieldVector::add).get());
-        FieldVector hExp = circuit.getlWeights().zip(circuit.getoWeights(),FieldVector::add).zip(zs, FieldVector::times).reduce(FieldVector::add).get();
-        ECPoint P = aI.multiply(x).add(aO).add(s.multiply(x.pow(3))).add(gs.commit(gExp)).add(hPrimes.commit(hExp)).add(u.multiply(t)).subtract(base.h.multiply(mu));
+        FieldVector gExp = zRWeights.times(x);
+        FieldVector hExp = zLWeights.times(x).add(zOWeights).subtract(ys);
+        ECPoint P = aI.multiply(x).add(aO.multiply(xSquared)).add(s.multiply(x.pow(3))).add(gs.commit(gExp)).add(hPrimes.commit(hExp)).add(u.multiply(t)).subtract(base.h.multiply(mu));
         VectorBase primeBase = new VectorBase(gs, hPrimes, u);
-        // System.out.println("PProof "+P.normalize());
-        // System.out.println("XProof " +x);
-        // System.out.println("YProof " +y);
-        // System.out.println("ZProof " +z);
-        // System.out.println("uProof " +u);
         InnerProductVerifier verifier = new InnerProductVerifier();
         verifier.verify(primeBase, P, proof.getProductProof());
 

@@ -1,8 +1,8 @@
 package edu.stanford.cs.crypto.efficientct.innerproduct;
 
 import cyclops.collections.mutable.ListX;
-import edu.stanford.cs.crypto.efficientct.ECConstants;
-import edu.stanford.cs.crypto.efficientct.ProofUtils;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
 import edu.stanford.cs.crypto.efficientct.Verifier;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;

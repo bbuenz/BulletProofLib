@@ -2,8 +2,8 @@ package edu.stanford.cs.crypto.efficientct.linearalgebra;
 
 import cyclops.collections.immutable.VectorX;
 import cyclops.companion.Monoids;
-import edu.stanford.cs.crypto.efficientct.ECConstants;
-import edu.stanford.cs.crypto.efficientct.ProofUtils;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 
 import java.math.BigInteger;
 import java.util.Iterator;
@@ -46,7 +46,9 @@ public class FieldVector implements Iterable<BigInteger> {
      * @return this \circ b
      */
     public FieldVector hadamard(Iterable<BigInteger> b) {
-
+        if (!b.iterator().hasNext()) {
+            from(VectorX.empty());
+        }
         return from(a.zip(b, BigInteger::multiply).map(bi -> bi.mod(q)));
     }
 
@@ -55,7 +57,21 @@ public class FieldVector implements Iterable<BigInteger> {
      * @return \sum_{i=1}^n b_i \cdot a_i
      */
     public FieldVector vectorMatrixProduct(VectorX<FieldVector> b) {
-        return b.zip(a, FieldVector::times).reduce(FieldVector::add).get();
+        if (b.size() != a.size()) {
+            throw new IllegalArgumentException("Vectors have to be same size");
+        }
+        return b.zip(a, FieldVector::times).reduce(FieldVector::add).orElse(from(VectorX.empty()));
+    }
+
+    /**
+     * @param b
+     * @return \sum_{i=1}^n b_i \cdot a_i
+     */
+    public FieldVector matrixVectorProduct(VectorX<FieldVector> b) {
+        if (b.get(0).size() != a.size()) {
+            throw new IllegalArgumentException("Vectors have to be same size");
+        }
+        return from(b.map(this::innerPoduct));
     }
 
     public FieldVector times(BigInteger b) {
@@ -64,7 +80,9 @@ public class FieldVector implements Iterable<BigInteger> {
     }
 
     public FieldVector add(Iterable<BigInteger> b) {
-
+        if (!b.iterator().hasNext()) {
+            return this;
+        }
         return from(a.zip(b, BigInteger::add).map(bi -> bi.mod(q)));
     }
 
@@ -74,6 +92,9 @@ public class FieldVector implements Iterable<BigInteger> {
     }
 
     public FieldVector subtract(Iterable<BigInteger> b) {
+        if (!b.iterator().hasNext()) {
+            return this;
+        }
         return from(a.zip(b, BigInteger::subtract).map(bi -> bi.mod(q)));
     }
 
@@ -121,5 +142,23 @@ public class FieldVector implements Iterable<BigInteger> {
     @Override
     public String toString() {
         return a.toString();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        FieldVector that = (FieldVector) o;
+
+        if (a != null ? !a.equals(that.a) : that.a != null) return false;
+        return q != null ? q.equals(that.q) : that.q == null;
+    }
+
+    @Override
+    public int hashCode() {
+        int result = a != null ? a.hashCode() : 0;
+        result = 31 * result + (q != null ? q.hashCode() : 0);
+        return result;
     }
 }

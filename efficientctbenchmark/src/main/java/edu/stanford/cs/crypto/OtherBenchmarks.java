@@ -1,8 +1,8 @@
 package edu.stanford.cs.crypto;
 
 import cyclops.collections.immutable.VectorX;
-import edu.stanford.cs.crypto.efficientct.ECConstants;
-import edu.stanford.cs.crypto.efficientct.ProofUtils;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 import org.bouncycastle.math.ec.ECPoint;
 import org.openjdk.jmh.annotations.*;

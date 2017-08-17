@@ -3,7 +3,7 @@ package edu.stanford.cs.crypto.efficientct.multirangeproof;
 import cyclops.collections.immutable.VectorX;
 import edu.stanford.cs.crypto.efficientct.*;
 import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
-import edu.stanford.cs.crypto.efficientct.commitments.PolyCommittment;
+import edu.stanford.cs.crypto.efficientct.commitments.PolyCommitment;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductProof;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductProver;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductWitness;
@@ -12,6 +12,8 @@ import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
 import edu.stanford.cs.crypto.efficientct.rangeproof.RangeProof;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;
@@ -20,19 +22,18 @@ import java.util.stream.Stream;
 /**
  * Created by buenz on 7/2/17.
  */
-public class MultiRangeProofProver implements Prover<GeneratorParams, GeneratorVector, MultiRangeProofWitness, RangeProof> {
+public class MultiRangeProofProver implements Prover<GeneratorParams, GeneratorVector, VectorX<PeddersenCommitment>, RangeProof> {
 
 
     @Override
-    public RangeProof generateProof(GeneratorParams parameter, GeneratorVector commitments, MultiRangeProofWitness witness) {
-        VectorX<BigInteger> numbers = witness.getNumber();
+    public RangeProof generateProof(GeneratorParams parameter, GeneratorVector commitments, VectorX<PeddersenCommitment> witness) {
         int m = commitments.size();
         VectorBase vectorBase = parameter.getVectorBase();
         PeddersenBase base = parameter.getBase();
         int n = vectorBase.getGs().size();
         int bitsPerNumber = n / m;
         //Bits
-        FieldVector aL = FieldVector.from(VectorX.range(0, n).map(i -> numbers.get(i / bitsPerNumber).testBit(i % bitsPerNumber) ? BigInteger.ONE : BigInteger.ZERO));
+        FieldVector aL = FieldVector.from(VectorX.range(0, n).map(i -> witness.get(i / bitsPerNumber).getX().testBit(i % bitsPerNumber) ? BigInteger.ONE : BigInteger.ZERO));
         //Bits -1
         FieldVector aR = aL.subtract(VectorX.fill(n, BigInteger.ONE));
         BigInteger alpha = ProofUtils.randomNumber();
@@ -46,7 +47,7 @@ public class MultiRangeProofProver implements Prover<GeneratorParams, GeneratorV
         ECPoint[] challengeArr = Stream.concat(commitments.stream(), Stream.of(a, s)).toArray(ECPoint[]::new);
         BigInteger y = ProofUtils.computeChallenge(challengeArr);
         //y^n
-        FieldVector ys = FieldVector.pow(y,n);
+        FieldVector ys = FieldVector.pow(y, n);
 
         BigInteger z = ProofUtils.challengeFromInts(y);
 
@@ -70,15 +71,18 @@ public class MultiRangeProofProver implements Prover<GeneratorParams, GeneratorV
         //t(X)
         FieldPolynomial tPoly = lPoly.innerProduct(rPoly);
         //Commit(t)
-        PolyCommittment polyCommittment = PolyCommittment.from(base, VectorX.of(tPoly.getCoefficients()));
-        BigInteger x = ProofUtils.computeChallenge(polyCommittment.getCommitments());
-        PeddersenCommitment mainCommitment = polyCommittment.evaluate(x);
+        BigInteger[] tPolyCoefficients = tPoly.getCoefficients();
+        PolyCommitment polyCommitment = PolyCommitment.from(base, tPolyCoefficients[0], VectorX.of(tPolyCoefficients).skip(1));
+        BigInteger x = ProofUtils.computeChallenge(polyCommitment.getCommitments());
+        PeddersenCommitment mainCommitment = polyCommitment.evaluate(x);
 
         BigInteger mu = alpha.add(rho.multiply(x)).mod(p);
 
         BigInteger t = mainCommitment.getX();
-        BigInteger tauX = mainCommitment.getR().add(zs.innerPoduct(witness.getRandomness()));
-        ECPoint u = ProofUtils.fromSeed(ProofUtils.challengeFromInts(tauX, mu, t).mod(p));
+        BigInteger tauX = mainCommitment.getR().add(zs.innerPoduct(witness.map(PeddersenCommitment::getR)));
+
+        BigInteger uChallenge = ProofUtils.challengeFromInts(tauX, mu, t);
+        ECPoint u = base.g.multiply(uChallenge);
         GeneratorVector hs = vectorBase.getHs();
         GeneratorVector gs = vectorBase.getGs();
         GeneratorVector hPrimes = hs.haddamard(ys.invert());
@@ -91,13 +95,6 @@ public class MultiRangeProofProver implements Prover<GeneratorParams, GeneratorV
         InnerProductProver prover = new InnerProductProver();
         InnerProductWitness innerProductWitness = new InnerProductWitness(l, r);
         InnerProductProof proof = prover.generateProof(primeBase, P, innerProductWitness);
-        //System.out.println("PProofAlt " + PAlt.normalize());
-//
-        //System.out.println("PProof " + P.normalize());
-        //System.out.println("XProof " + x);
-        //System.out.println("YProof " + y);
-        //System.out.println("ZProof " + z);
-        //System.out.println("uProof " + u);
-        return new RangeProof(a, s, GeneratorVector.from(polyCommittment.getCommitments()), tauX, mu, t, proof);
+        return new RangeProof(a, s, GeneratorVector.from(polyCommitment.getCommitments()), tauX, mu, t, proof);
     }
 }

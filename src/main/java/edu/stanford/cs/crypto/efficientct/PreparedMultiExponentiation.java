@@ -1,6 +1,7 @@
 package edu.stanford.cs.crypto.efficientct;
 
 import cyclops.stream.ReactiveSeq;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;

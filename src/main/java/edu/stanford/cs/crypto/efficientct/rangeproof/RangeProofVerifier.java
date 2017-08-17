@@ -7,6 +7,8 @@ import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;
@@ -45,20 +47,22 @@ public class RangeProofVerifier implements Verifier<GeneratorParams, ECPoint, Ra
         BigInteger t = proof.getT();
         ECPoint lhs = base.commit(t, tauX);
         BigInteger k = ys.sum().multiply(z.subtract(zSquared)).subtract(zCubed.shiftLeft(n).subtract(zCubed));
-        ECPoint rhs =tCommits.commit(Arrays.asList(x,x.pow(2))).add(input.multiply(zSquared)).add(base.commit(k, BigInteger.ZERO));
+        ECPoint rhs = tCommits.commit(Arrays.asList(x, x.pow(2))).add(input.multiply(zSquared)).add(base.commit(k, BigInteger.ZERO));
         equal(lhs, rhs, "Polynomial identity check failed, LHS: %s, RHS %s");
-        ECPoint u = ProofUtils.fromSeed(ProofUtils.challengeFromInts(tauX, mu, t));
+
+        BigInteger uChallenge = ProofUtils.challengeFromInts(tauX, mu, t);
+        ECPoint u = base.g.multiply(uChallenge);
         GeneratorVector hs = vectorBase.getHs();
         GeneratorVector gs = vectorBase.getGs();
         GeneratorVector hPrimes = hs.haddamard(ys.invert());
         FieldVector hExp = ys.times(z).add(twoTimesZSquared);
         ECPoint P = a.add(s.multiply(x)).add(gs.sum().multiply(z.negate())).add(hPrimes.commit(hExp)).subtract(base.h.multiply(mu)).add(u.multiply(t));
         VectorBase primeBase = new VectorBase(gs, hPrimes, u);
-       // System.out.println("PVerify "+P.normalize());
-       // System.out.println("XVerify" +x);
-       // System.out.println("YVerify" +y);
-       // System.out.println("ZVerify" +z);
-       // System.out.println("uVerify" +u);
+        // System.out.println("PVerify "+P.normalize());
+        // System.out.println("XVerify" +x);
+        // System.out.println("YVerify" +y);
+        // System.out.println("ZVerify" +z);
+        // System.out.println("uVerify" +u);
         EfficientInnerProductVerifier verifier = new EfficientInnerProductVerifier();
         verifier.verify(primeBase, P, proof.getProductProof());
 

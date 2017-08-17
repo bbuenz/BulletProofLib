@@ -2,7 +2,7 @@ package edu.stanford.cs.crypto.efficientct.innerproduct;
 
 import cyclops.collections.immutable.VectorX;
 import edu.stanford.cs.crypto.efficientct.ProofSystem;
-import edu.stanford.cs.crypto.efficientct.ProofUtils;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
 import org.bouncycastle.math.ec.ECPoint;

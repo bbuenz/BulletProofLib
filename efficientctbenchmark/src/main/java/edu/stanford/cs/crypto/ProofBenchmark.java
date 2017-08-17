@@ -32,29 +32,31 @@
 package edu.stanford.cs.crypto;
 
 import edu.stanford.cs.crypto.efficientct.GeneratorParams;
-import edu.stanford.cs.crypto.efficientct.ProofUtils;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
+import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
 import edu.stanford.cs.crypto.efficientct.rangeproof.*;
 import org.bouncycastle.math.ec.ECPoint;
 import org.openjdk.jmh.annotations.*;
 
 import java.math.BigInteger;
+
 @State(Scope.Benchmark)
 public class ProofBenchmark {
     private final RangeProofSystem rangeProofSystem = new RangeProofSystem();
     private final RangeProofProver prover = new RangeProofProver();
-    private final GeneratorParams generatorParams = rangeProofSystem.generateParams(64);
+    private final GeneratorParams generatorParams = GeneratorParams.generateParams(64);
     private ECPoint commitment;
-    private RangeProofWitness witness;
+    private PeddersenCommitment witness;
     private RangeProof oneProof;
-    private RangeProofVerifier verifier=new RangeProofVerifier();
+    private RangeProofVerifier verifier = new RangeProofVerifier();
+
     @Setup
     public void setUp() {
         BigInteger number = ProofUtils.randomNumber(60);
-        BigInteger r = ProofUtils.randomNumber();
-        commitment = generatorParams.getBase().commit(number, r);
-        this.witness = new RangeProofWitness(number, r);
-        oneProof=testProving();
+        this.witness = new PeddersenCommitment(generatorParams.getBase(), number);
+        commitment = witness.getCommitment();
+        oneProof = testProving();
     }
 
     @Benchmark

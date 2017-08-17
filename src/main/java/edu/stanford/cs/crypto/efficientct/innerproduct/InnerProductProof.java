@@ -1,6 +1,6 @@
 package edu.stanford.cs.crypto.efficientct.innerproduct;
 
-import edu.stanford.cs.crypto.efficientct.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
 import edu.stanford.cs.crypto.efficientct.Proof;
 import org.bouncycastle.math.ec.ECPoint;
 

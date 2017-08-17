@@ -2,7 +2,7 @@ package edu.stanford.cs.crypto.efficientct.linearalgebra;
 
 import cyclops.collections.immutable.VectorX;
 import cyclops.function.Monoid;
-import edu.stanford.cs.crypto.efficientct.ECConstants;
+import edu.stanford.cs.crypto.efficientct.util.ECConstants;
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;

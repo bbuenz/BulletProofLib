@@ -1,6 +1,7 @@
 package edu.stanford.cs.crypto.efficientct.multirangeproof;
 
 import cyclops.collections.immutable.VectorX;
+import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
 
 import java.math.BigInteger;
 
@@ -8,20 +9,15 @@ import java.math.BigInteger;
  * Created by buenz on 7/1/17.
  */
 public class MultiRangeProofWitness {
-    private final VectorX<BigInteger> number;
+    private final VectorX<PeddersenCommitment> commitments;
 
-    private final VectorX<BigInteger> randomness;
 
-    public MultiRangeProofWitness(VectorX<BigInteger> number, VectorX<BigInteger> randomness) {
-        this.number = number;
-        this.randomness = randomness;
+
+    public MultiRangeProofWitness(VectorX<PeddersenCommitment> commitments) {
+
+        this.commitments = commitments;
     }
-
-    public VectorX<BigInteger> getNumber() {
-        return number;
-    }
-
-    public VectorX<BigInteger> getRandomness() {
-        return randomness;
+    public VectorX<PeddersenCommitment> getCommitments() {
+        return commitments;
     }
 }

@@ -1,4 +1,4 @@
-package edu.stanford.cs.crypto.efficientct;/*
+package edu.stanford.cs.crypto.efficientct.util;/*
  * Decompiled with CFR 0_110.
  */
 
