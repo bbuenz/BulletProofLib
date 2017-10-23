@@ -5,7 +5,6 @@ import edu.stanford.cs.crypto.efficientct.Proof;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductProof;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import org.bouncycastle.math.ec.ECPoint;
-
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;

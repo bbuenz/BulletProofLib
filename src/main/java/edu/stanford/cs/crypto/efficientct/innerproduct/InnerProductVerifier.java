@@ -46,7 +46,7 @@ public class InnerProductVerifier implements Verifier<VectorBase, ECPoint, Inner
 
             }
             c = L.multiply(xSquare).add(R.multiply(xInvSquare)).add(c);
-
+            System.out.println(c);
             gs = gPrime;
             hs = hPrime;
             n = gs.size();

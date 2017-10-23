@@ -24,7 +24,7 @@ public class InnerProductProver implements Prover<VectorBase, ECPoint, InnerProd
         return generateProof(base, c, witness.getA(), witness.getB(), new ArrayList<>(Integer.bitCount(n)), new ArrayList<>(Integer.bitCount(n)));
     }
 
-    private InnerProductProof generateProof(VectorBase base, ECPoint c, FieldVector as, FieldVector bs, List<ECPoint> ls, List<ECPoint> rs) {
+    private InnerProductProof generateProof(VectorBase base, ECPoint P, FieldVector as, FieldVector bs, List<ECPoint> ls, List<ECPoint> rs) {
         int n = as.size();
         if (n == 1) {
             return new InnerProductProof(ls, rs, as.firstValue(), bs.firstValue());
@@ -48,13 +48,13 @@ public class InnerProductProver implements Prover<VectorBase, ECPoint, InnerProd
         ECPoint L = gRight.commit(asLeft).add(hLeft.commit(bsRight));
         ECPoint R = gLeft.commit(asRight).add(hRight.commit(bsLeft));
 
-        ECPoint v = base.getH();
-        L = L.add(v.multiply(cL));
+        ECPoint u = base.getH();
+        L = L.add(u.multiply(cL));
         ls.add(L);
-        R = R.add(v.multiply(cR));
+        R = R.add(u.multiply(cR));
         rs.add(R);
 
-        BigInteger x = ProofUtils.computeChallenge(L, c, R);
+        BigInteger x = ProofUtils.computeChallenge(L, P, R);
         BigInteger xInv = x.modInverse(ECConstants.P);
         BigInteger xSquare = x.pow(2).mod(ECConstants.P);
         BigInteger xInvSquare = xInv.pow(2).mod(ECConstants.P);
@@ -71,16 +71,19 @@ public class InnerProductProver implements Prover<VectorBase, ECPoint, InnerProd
             bPrime = bPrime.plus(bs.get(n - 1));
 
         }
-
-        ECPoint cPrime = L.multiply(xSquare).add(R.multiply(xInvSquare)).add(c);
-        VectorBase basePrime = new VectorBase(gPrime, hPrime, v);
-        //System.out.println("c "+ aPrime.innerPoduct(bPrime).mod(ECConstants.P));
-        //System.out.println("calt "+asLeft.innerPoduct(bsRight).multiply(xSquare).add(asRight.innerPoduct(bsLeft).multiply(xInvSquare)).add(as.innerPoduct(bs)).mod(ECConstants.P));
-        //System.out.println("X " + x);
+        System.out.println("P " + P.normalize());
+        System.out.println("PAlt "+gs.commit(as).add(hs.commit(bs)).add(u.multiply(as.innerPoduct(bs))).normalize());
+        ECPoint PPrime = L.multiply(xSquare).add(R.multiply(xInvSquare)).add(P);
+        VectorBase basePrime = new VectorBase(gPrime, hPrime, u);
+        System.out.println("c "+ aPrime.innerPoduct(bPrime).mod(ECConstants.P));
+        System.out.println("calt "+asLeft.innerPoduct(bsRight).multiply(xSquare).add(asRight.innerPoduct(bsLeft).multiply(xInvSquare)).add(as.innerPoduct(bs)).mod(ECConstants.P));
+        System.out.println("X " + x);
         //System.out.println("Xinv " + xInv);
-        //System.out.println("C " +cPrime.normalize());
-        //System.out.println("C alt" +gPrime.commit(aPrime).add(hPrime.commit(bPrime).add(v.multiply(aPrime.innerPoduct(bPrime)))).normalize());
-        return generateProof(basePrime, cPrime, aPrime, bPrime, ls, rs);
+        System.out.println("C " +PPrime.normalize());
+        ECPoint pPrimeAlt = gPrime.commit(aPrime).add(hPrime.commit(bPrime).add(u.multiply(aPrime.innerPoduct(bPrime)))).normalize();
+        System.out.println("C alt" + pPrimeAlt);
+        System.out.println(PPrime.equals(pPrimeAlt));
+        return generateProof(basePrime, PPrime, aPrime, bPrime, ls, rs);
     }
 
 }

@@ -14,6 +14,7 @@ import java.math.BigInteger;
  * Created by buenz on 7/1/17.
  */
 public class RangeProofProverTest {
+
     @Test
     public void testCompletness() throws VerificationFailedException {
         BigInteger number = BigInteger.valueOf(5);

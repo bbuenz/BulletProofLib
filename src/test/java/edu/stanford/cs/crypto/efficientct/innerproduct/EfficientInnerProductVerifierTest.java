@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
  * Created by buenz on 6/29/17.
  */
 public class EfficientInnerProductVerifierTest {
+
     @Test
     public void testCompletness() throws Exception {
         InnerProductProofSystem system = new InnerProductProofSystem();

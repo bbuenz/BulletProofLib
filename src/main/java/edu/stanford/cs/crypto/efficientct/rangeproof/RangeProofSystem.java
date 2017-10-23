@@ -11,6 +11,7 @@ import org.bouncycastle.math.ec.ECPoint;
 public class RangeProofSystem implements ProofSystem<GeneratorParams, ECPoint, PeddersenCommitment, RangeProof, RangeProofProver, RangeProofVerifier> {
     @Override
     public RangeProofProver getProver() {
+
         return new RangeProofProver();
     }
 
