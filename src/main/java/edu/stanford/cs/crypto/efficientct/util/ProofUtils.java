@@ -6,8 +6,10 @@ import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECFieldElement;
 import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.math.ec.custom.djb.Curve25519FieldElement;
 import org.bouncycastle.math.ec.custom.sec.SecP256K1Curve;
 import org.bouncycastle.math.ec.custom.sec.SecP256K1FieldElement;
+import org.bouncycastle.math.ec.custom.sec.SecP256R1FieldElement;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -84,7 +86,10 @@ public class ProofUtils {
         boolean success = false;
         do {
             ECFieldElement x = new SecP256K1FieldElement(seed.mod(ECConstants.P));
+
             ECFieldElement rhs = x.square().multiply(x.add(curve.getA())).add(curve.getB());
+
+            //ECFieldElement rhs = x.squarePow(3).add(x.square().multiply(curve.getA())).add(x);
             ECFieldElement y = rhs.sqrt();
             if (y != null) {
                 point = curve.validatePoint(x.toBigInteger(), y.toBigInteger());

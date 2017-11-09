@@ -5,9 +5,11 @@ package edu.stanford.cs.crypto.efficientct.util;/*
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
+import org.bouncycastle.math.ec.custom.djb.Curve25519;
 import org.bouncycastle.math.ec.custom.sec.SecP256K1Curve;
 import org.bouncycastle.math.ec.custom.sec.SecP256K1FieldElement;
 import org.bouncycastle.math.ec.custom.sec.SecP256K1Point;
+import org.bouncycastle.math.ec.custom.sec.SecP256R1Curve;
 
 import java.math.BigInteger;
 
