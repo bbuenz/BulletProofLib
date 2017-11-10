@@ -1,6 +1,0 @@
-inputlist=[0]*(90*90*2+1)
-max=2**30
-for i in xrange(90*90*2): inputlist[i]=i+max
-inputlist[-1]=1
-mm=900
-nn=819
