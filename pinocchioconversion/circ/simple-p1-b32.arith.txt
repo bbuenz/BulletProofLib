@@ -1,0 +1,14 @@
+total 12
+input 0			 # The one-input wire.
+const-mul-0 in 1 <0> out 1 <1>
+input 2
+input 3
+input 4
+input 5
+mul in 2 <2 3> out 1 <6>
+add in 2 <4 5> out 1 <7>
+const-mul-5 in 1 <0> out 1 <8>
+add in 2 <6 8> out 1 <9>
+const-mul-6 in 1 <7> out 1 <10>
+mul in 2 <9 10> out 1 <11>
+output 11

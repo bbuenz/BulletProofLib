@@ -1,0 +1,7 @@
+inputlist=[0]*5001
+max=2**30
+#max=0
+for i in xrange(5000): inputlist[i]=i+max
+inputlist[-1]=1
+mm=15*5*5
+nn=17*5*4

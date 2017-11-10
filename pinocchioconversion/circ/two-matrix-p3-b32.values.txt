@@ -1,0 +1,6 @@
+inputlist=[0]*(70*70*2+1)
+max=2**30
+for i in xrange(70*70*2): inputlist[i]=i+max
+inputlist[-1]=1
+mm=71*7
+nn=70*10
