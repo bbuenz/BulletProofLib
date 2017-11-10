@@ -1,0 +1,7 @@
+inputlist=[0]*257
+max=2**30
+#max=0
+for i in xrange(256): inputlist[i]=i+max
+inputlist[16]=1
+mm=156/4
+nn=156*4
