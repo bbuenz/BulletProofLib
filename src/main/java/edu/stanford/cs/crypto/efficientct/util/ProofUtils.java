@@ -2,62 +2,60 @@ package edu.stanford.cs.crypto.efficientct.util;/*
  * Decompiled with CFR 0_110.
  */
 
+import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
 import org.bouncycastle.jcajce.provider.digest.Keccak;
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECFieldElement;
 import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.math.ec.custom.djb.Curve25519FieldElement;
-import org.bouncycastle.math.ec.custom.sec.SecP256K1Curve;
 import org.bouncycastle.math.ec.custom.sec.SecP256K1FieldElement;
-import org.bouncycastle.math.ec.custom.sec.SecP256R1FieldElement;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 public class ProofUtils {
     private static final ThreadLocal<MessageDigest> KECCACK;
     private static final SecureRandom RNG;
 
-    public static BigInteger computeChallenge(ECPoint... points) {
+    public static <T extends GroupElement<T>> BigInteger computeChallenge(BigInteger q,T... points) {
         MessageDigest sha = KECCACK.get();
-        for (ECPoint point : points) {
-            sha.update(point.getEncoded(false));
+        for (T point : points) {
+            sha.update(point.canonicalRepresentation());
         }
         byte[] hash = sha.digest();
-        return new BigInteger(hash).mod(ECConstants.P);
+        return new BigInteger(hash).mod(q);
     }
 
-    public static BigInteger computeChallenge(Iterable<ECPoint> points) {
+    public static <T extends GroupElement<T>> BigInteger computeChallenge(BigInteger q,Iterable<T> points) {
         MessageDigest sha = KECCACK.get();
-        for (ECPoint point : points) {
-            sha.update(point.getEncoded(false));
+        for (T point : points) {
+            sha.update(point.canonicalRepresentation());
         }
         byte[] hash = sha.digest();
-        return new BigInteger(hash).mod(ECConstants.P);
+        return new BigInteger(hash).mod(q);
     }
 
-    public static BigInteger computeChallenge(BigInteger[] ints, ECPoint... points) {
+    public static <T extends GroupElement<T>> BigInteger computeChallenge(BigInteger q,BigInteger[] ints, T... points) {
         MessageDigest sha = KECCACK.get();
         for (BigInteger integer : ints) {
             sha.update(integer.toByteArray());
         }
-        for (ECPoint point : points) {
-            sha.update(point.getEncoded(false));
+        for (T point : points) {
+            sha.update(point.canonicalRepresentation());
         }
         byte[] hash = sha.digest();
-        return new BigInteger(hash).mod(ECConstants.P);
+        return new BigInteger(hash).mod(q);
     }
 
-    public static BigInteger challengeFromInts(BigInteger... integers) {
+    public static BigInteger challengeFromints(BigInteger q, BigInteger... ints){
         MessageDigest sha = KECCACK.get();
-        for (BigInteger integer : integers) {
+        for (BigInteger integer : ints) {
             sha.update(integer.toByteArray());
         }
         byte[] hash = sha.digest();
-        return new BigInteger(hash).mod(ECConstants.P);
+        return new BigInteger(hash).mod(q);
     }
+
 
     public static BigInteger hash(String string) {
         KECCACK.get().update(string.getBytes());
@@ -78,37 +76,6 @@ public class ProofUtils {
         return ProofUtils.randomNumber(256);
     }
 
-    public static ECPoint fromSeed(BigInteger seed) {
-        ECCurve curve = ECConstants.BITCOIN_CURVE;
-
-
-        ECPoint point = null;
-        boolean success = false;
-        do {
-            ECFieldElement x = new SecP256K1FieldElement(seed.mod(ECConstants.P));
-
-            ECFieldElement rhs = x.square().multiply(x.add(curve.getA())).add(curve.getB());
-
-            //ECFieldElement rhs = x.squarePow(3).add(x.square().multiply(curve.getA())).add(x);
-            ECFieldElement y = rhs.sqrt();
-            if (y != null) {
-                point = curve.validatePoint(x.toBigInteger(), y.toBigInteger());
-            /*
-            BigInteger p = ECConstants.P;
-            BigInteger x = seed.mod(p);
-            BigInteger rhs = x.pow(3).add(curve.getA().toBigInteger().multiply(x)).add(curve.getB().toBigInteger()).mod(p);
-            BigInteger y = rhs.modPow(p.add(BigInteger.ONE).shiftRight(2), p);
-            if (y.modPow(BigInteger.valueOf(2), p).equals(rhs)) {
-
-                point = curve.validatePoint(x, y);
-        */
-                success = true;
-            } else {
-                seed = seed.add(BigInteger.ONE);
-            }
-        } while (!success);
-        return point;
-    }
 
     static {
         RNG = new SecureRandom();

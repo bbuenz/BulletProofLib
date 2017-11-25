@@ -3,21 +3,21 @@ package edu.stanford.cs.crypto.efficientct.rangeproof;
 import edu.stanford.cs.crypto.efficientct.GeneratorParams;
 import edu.stanford.cs.crypto.efficientct.ProofSystem;
 import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
-import org.bouncycastle.math.ec.ECPoint;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
 
 /**
  * Created by buenz on 7/1/17.
  */
-public class RangeProofSystem implements ProofSystem<GeneratorParams, ECPoint, PeddersenCommitment, RangeProof, RangeProofProver, RangeProofVerifier> {
+public class RangeProofSystem<T extends GroupElement<T>> implements ProofSystem<GeneratorParams<T>, T, PeddersenCommitment<T>, RangeProof<T>, RangeProofProver<T>, RangeProofVerifier<T>> {
     @Override
-    public RangeProofProver getProver() {
+    public RangeProofProver<T> getProver() {
 
-        return new RangeProofProver();
+        return new RangeProofProver<>();
     }
 
     @Override
-    public RangeProofVerifier getVerifier() {
-        return new RangeProofVerifier();
+    public RangeProofVerifier<T> getVerifier() {
+        return new RangeProofVerifier<>();
     }
 
 

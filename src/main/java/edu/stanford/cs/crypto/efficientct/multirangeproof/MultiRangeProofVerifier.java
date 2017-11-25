@@ -1,76 +1,81 @@
 package edu.stanford.cs.crypto.efficientct.multirangeproof;
 
 import cyclops.collections.immutable.VectorX;
-import edu.stanford.cs.crypto.efficientct.*;
+import edu.stanford.cs.crypto.efficientct.GeneratorParams;
+import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
+import edu.stanford.cs.crypto.efficientct.Verifier;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductVerifier;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
 import edu.stanford.cs.crypto.efficientct.rangeproof.RangeProof;
-import edu.stanford.cs.crypto.efficientct.util.ECConstants;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
-import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
  * Created by buenz on 7/1/17.
  */
-public class MultiRangeProofVerifier implements Verifier<GeneratorParams, GeneratorVector, RangeProof> {
+public class MultiRangeProofVerifier<T extends GroupElement<T>> implements Verifier<GeneratorParams<T>, GeneratorVector<T>, RangeProof<T>> {
     @Override
-    public void verify(GeneratorParams params, GeneratorVector commitments, RangeProof proof) throws VerificationFailedException {
+    public void verify(GeneratorParams<T> params, GeneratorVector<T> commitments, RangeProof<T> proof) throws VerificationFailedException {
         int m = commitments.size();
-        VectorBase vectorBase = params.getVectorBase();
-        PeddersenBase base = params.getBase();
+        VectorBase<T> vectorBase = params.getVectorBase();
+        PeddersenBase<T> base = params.getBase();
         int n = vectorBase.getGs().size();
         int bitsPerNumber = n / m;
 
-        ECPoint a = proof.getaI();
-        ECPoint s = proof.getS();
+        BigInteger q = params.getGroup().groupOrder();
 
-        ECPoint[] challengeArr = Stream.concat(commitments.stream(), Stream.of(a, s)).toArray(ECPoint[]::new);
-        BigInteger y = ProofUtils.computeChallenge(challengeArr);
-        FieldVector ys = FieldVector.from(VectorX.iterate(n, BigInteger.ONE, y::multiply));
+        T a = proof.getaI();
+        T s = proof.getS();
 
-        BigInteger p = ECConstants.P;
-        BigInteger z = ProofUtils.challengeFromInts(y);
-        FieldVector zs = FieldVector.from(VectorX.iterate(m, z.pow(2), z::multiply).map(bi -> bi.mod(p)));
+        List<T> challengeArr = Stream.concat(commitments.stream(), Stream.of(a, s)).collect(Collectors.toList());
+        BigInteger y = ProofUtils.computeChallenge(q, challengeArr);
+        FieldVector ys = FieldVector.from(VectorX.iterate(n, BigInteger.ONE, y::multiply),q);
+
+        BigInteger z = ProofUtils.challengeFromints(q,y);
+        FieldVector zs = FieldVector.from(VectorX.iterate(m, z.pow(2), z::multiply).map(bi -> bi.mod(q)),q);
 
         VectorX<BigInteger> twoVector = VectorX.iterate(bitsPerNumber, BigInteger.ONE, bi -> bi.shiftLeft(1));
-        FieldVector twos = FieldVector.from(twoVector);
-        FieldVector twoTimesZSquared = FieldVector.from(zs.getVector().flatMap(twos::times));
-        BigInteger zSum = zs.sum().multiply(z).mod(p);
-        BigInteger k = ys.sum().multiply(z.subtract(zs.get(0))).subtract(zSum.shiftLeft(bitsPerNumber).subtract(zSum)).mod(ECConstants.P);
+        FieldVector twos = FieldVector.from(twoVector,q);
+        FieldVector twoTimesZSquared = FieldVector.from(zs.getVector().flatMap(twos::times),q);
+        BigInteger zSum = zs.sum().multiply(z).mod(q);
+        BigInteger k = ys.sum().multiply(z.subtract(zs.get(0))).subtract(zSum.shiftLeft(bitsPerNumber).subtract(zSum)).mod(q);
 
-        GeneratorVector tCommits = proof.gettCommits();
+        GeneratorVector<T> tCommits = proof.gettCommits();
 
 
-        BigInteger x = ProofUtils.computeChallenge(tCommits);
+        BigInteger x = ProofUtils.computeChallenge(q, tCommits);
 
         BigInteger tauX = proof.getTauX();
         BigInteger mu = proof.getMu();
         BigInteger t = proof.getT();
-        ECPoint lhs = base.commit(t, tauX);
-        ECPoint rhs = tCommits.commit(Arrays.asList(x, x.pow(2).mod(ECConstants.P))).add(commitments.commit(zs)).add(base.commit(k, BigInteger.ZERO));
+        T lhs = base.commit(t, tauX);
+        T rhs = tCommits.commit(Arrays.asList(x, x.pow(2).mod(q))).add(commitments.commit(zs)).add(base.commit(k, BigInteger.ZERO));
         equal(lhs, rhs, "Polynomial identity check failed, LHS: %s, RHS %s");
 
 
-        BigInteger uChallenge = ProofUtils.challengeFromInts(tauX, mu, t);
-        ECPoint u = base.g.multiply(uChallenge);        GeneratorVector hs = vectorBase.getHs();
-        GeneratorVector gs = vectorBase.getGs();
-        GeneratorVector hPrimes = hs.haddamard(ys.invert());
+        BigInteger uChallenge = ProofUtils.challengeFromints(q,tauX, mu, t);
+        T u = base.g.multiply(uChallenge);
+        GeneratorVector<T> hs = vectorBase.getHs();
+        GeneratorVector<T> gs = vectorBase.getGs();
+        GeneratorVector<T> hPrimes = hs.haddamard(ys.invert());
         FieldVector hExp = ys.times(z).add(twoTimesZSquared);
-        ECPoint P = a.add(s.multiply(x)).add(gs.sum().multiply(z.negate())).add(hPrimes.commit(hExp)).add(u.multiply(t)).subtract(base.h.multiply(mu));
-        VectorBase primeBase = new VectorBase(gs, hPrimes, u);
+        T P = a.add(s.multiply(x)).add(gs.sum().multiply(z.negate())).add(hPrimes.commit(hExp)).add(u.multiply(t)).subtract(base.h.multiply(mu));
+        VectorBase<T> primeBase = new VectorBase<>(gs, hPrimes, u);
         // System.out.println("PProof "+P.normalize());
         // System.out.println("XProof " +x);
         // System.out.println("YProof " +y);
         // System.out.println("ZProof " +z);
         // System.out.println("uProof " +u);
-        InnerProductVerifier verifier = new InnerProductVerifier();
+        InnerProductVerifier<T> verifier = new InnerProductVerifier<>();
         verifier.verify(primeBase, P, proof.getProductProof());
 
     }

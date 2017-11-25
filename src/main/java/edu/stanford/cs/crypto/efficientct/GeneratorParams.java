@@ -4,37 +4,44 @@ import cyclops.collections.immutable.VectorX;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.Group;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
-import org.bouncycastle.math.ec.ECPoint;
 
 /**
  * Created by buenz on 7/1/17.
  */
-public class GeneratorParams implements PublicParameter {
-    private final VectorBase vectorBase;
-    private final PeddersenBase base;
+public class GeneratorParams<T extends GroupElement<T>> implements PublicParameter {
+    private final VectorBase<T> vectorBase;
+    private final PeddersenBase<T> base;
+    private final Group<T> group;
 
-    public GeneratorParams(VectorBase vectorBase, PeddersenBase base) {
+    public GeneratorParams(VectorBase<T> vectorBase, PeddersenBase<T> base, Group<T> group) {
         this.vectorBase = vectorBase;
         this.base = base;
+        this.group = group;
     }
 
-    public VectorBase getVectorBase() {
+    public VectorBase<T> getVectorBase() {
         return vectorBase;
     }
 
-    public PeddersenBase getBase() {
+    public PeddersenBase<T> getBase() {
         return base;
     }
 
-    public static GeneratorParams generateParams(int size) {
-        VectorX<ECPoint> gs = VectorX.range(0,size).map(i -> "G" + i).map(ProofUtils::hash).map(ProofUtils::fromSeed);
-        VectorX<ECPoint> hs = VectorX.range(0,size).map(i -> "H" + i).map(ProofUtils::hash).map(ProofUtils::fromSeed);
-        ECPoint g = ProofUtils.fromSeed(ProofUtils.hash("G"));
-        ECPoint h = ProofUtils.fromSeed(ProofUtils.hash("H"));
-        VectorBase vectorBase=new VectorBase(GeneratorVector.from(gs),GeneratorVector.from(hs), h);
-        PeddersenBase base=new PeddersenBase(g,h);
-        return new GeneratorParams(vectorBase,base);
+    public Group<T> getGroup() {
+        return group;
+    }
+
+    public static <T extends GroupElement<T>> GeneratorParams<T> generateParams(int size, Group<T> group) {
+        VectorX<T> gs = VectorX.range(0, size).map(i -> "G" + i).map(ProofUtils::hash).map(group::hashInto);
+        VectorX<T> hs = VectorX.range(0, size).map(i -> "H" + i).map(ProofUtils::hash).map(group::hashInto);
+        T g = group.hashInto(ProofUtils.hash("G"));
+        T h = group.hashInto(ProofUtils.hash("H"));
+        VectorBase<T> vectorBase = new VectorBase<>(new GeneratorVector<>(gs, group), new GeneratorVector<>(hs, group), h);
+        PeddersenBase<T> base = new PeddersenBase<>(g, h, group);
+        return new GeneratorParams<>(vectorBase, base, group);
 
     }
 }

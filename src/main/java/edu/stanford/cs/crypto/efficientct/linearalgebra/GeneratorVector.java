@@ -2,8 +2,8 @@ package edu.stanford.cs.crypto.efficientct.linearalgebra;
 
 import cyclops.collections.immutable.VectorX;
 import cyclops.function.Monoid;
-import edu.stanford.cs.crypto.efficientct.util.ECConstants;
-import org.bouncycastle.math.ec.ECPoint;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.Group;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
 
 import java.math.BigInteger;
 import java.util.Iterator;
@@ -12,42 +12,45 @@ import java.util.stream.Stream;
 /**
  * Created by buenz on 7/2/17.
  */
-public class GeneratorVector implements Iterable<ECPoint> {
-    private final VectorX<ECPoint> gs;
-    private static final Monoid<ECPoint> ECPOINT_SUM = Monoid.of(ECConstants.INFINITY, ECPoint::add);
+public class GeneratorVector<T extends GroupElement<T>> implements Iterable<T> {
+    private final VectorX<T> gs;
+    private final Group<T> group;
+    private final Monoid<T> ECPOINT_SUM ;
 
-    public GeneratorVector(VectorX<ECPoint> gs) {
+    public GeneratorVector(VectorX<T> gs,Group<T> group) {
         this.gs = gs;
+        this.group=group;
+        ECPOINT_SUM=Monoid.of(group.zero(), T::add);
     }
 
-    public static GeneratorVector from(VectorX<ECPoint> gs) {
-        return new GeneratorVector(gs);
+    private GeneratorVector<T> from(VectorX<T> gs) {
+        return new GeneratorVector<>(gs, group);
     }
 
-    public GeneratorVector subVector(int start, int end) {
+    public GeneratorVector<T> subVector(int start, int end) {
         return from(gs.subList(start, end));
     }
 
-    public ECPoint commit(Iterable<BigInteger> exponents) {
+    public T commit(Iterable<BigInteger> exponents) {
 
-        return gs.zip(exponents, ECPoint::multiply).reduce(ECPOINT_SUM);
+        return gs.zip(exponents, T::multiply).reduce(ECPOINT_SUM);
     }
 
 
-    public ECPoint sum() {
+    public T sum() {
         return gs.reduce(ECPOINT_SUM);
     }
 
-    public GeneratorVector haddamard(Iterable<BigInteger> exponents) {
-        return from(gs.zip(exponents, ECPoint::multiply));
+    public GeneratorVector<T> haddamard(Iterable<BigInteger> exponents) {
+        return from(gs.zip(exponents, T::multiply));
 
     }
 
-    public GeneratorVector add(Iterable<ECPoint> b) {
-        return from(gs.zip(b, ECPoint::add));
+    public GeneratorVector<T> add(Iterable<T> b) {
+        return from(gs.zip(b, T::add));
     }
 
-    public ECPoint get(int i) {
+    public T get(int i) {
         return gs.get(i);
     }
 
@@ -55,17 +58,17 @@ public class GeneratorVector implements Iterable<ECPoint> {
         return gs.size();
     }
 
-    public Stream<ECPoint> stream() {
+    public Stream<T> stream() {
         return gs.stream();
     }
 
-    public VectorX<ECPoint> getVector() {
+    public VectorX<T> getVector() {
         return gs;
     }
 
     @Override
     public String toString() {
-        return gs.map(ECPoint::normalize).toString();
+        return gs.map(T::stringRepresentation).toString();
     }
 
     @Override
@@ -78,11 +81,18 @@ public class GeneratorVector implements Iterable<ECPoint> {
     }
 
     @Override
-    public Iterator<ECPoint> iterator() {
+    public Iterator<T> iterator() {
         return gs.iterator();
     }
 
-    public GeneratorVector plus(ECPoint other) {
+    public GeneratorVector<T> plus(T other) {
         return from(gs.plus(other));
+    }
+
+    public Group<T> getGroup() {
+        return group;
+    }
+    public static <T extends GroupElement<T>> GeneratorVector<T> from(VectorX<T> gs,Group<T> group) {
+        return new GeneratorVector<>(gs, group);
     }
 }

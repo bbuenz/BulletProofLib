@@ -1,6 +1,7 @@
 package edu.stanford.cs.crypto.efficientct.circuit;
 
 import cyclops.collections.immutable.VectorX;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 
@@ -9,16 +10,16 @@ import java.math.BigInteger;
 /**
  * Created by buenz on 7/6/17.
  */
-public class ArithmeticCircuit {
+public class ArithmeticCircuit<T extends GroupElement<T>> {
     private final VectorX<FieldVector> lWeights;
     private final VectorX<FieldVector> rWeights;
     private final VectorX<FieldVector> oWeights;
     private final VectorX<FieldVector> commitmentWeights;
 
     private final VectorX<BigInteger> cs;
-    private final GeneratorVector commitments;
+    private final GeneratorVector<T> commitments;
 
-    public ArithmeticCircuit(VectorX<FieldVector> lWeights, VectorX<FieldVector> rWeights, VectorX<FieldVector> oWeights, VectorX<FieldVector> commitmentWeights, VectorX<BigInteger> cs, GeneratorVector commitments) {
+    public ArithmeticCircuit(VectorX<FieldVector> lWeights, VectorX<FieldVector> rWeights, VectorX<FieldVector> oWeights, VectorX<FieldVector> commitmentWeights, VectorX<BigInteger> cs, GeneratorVector<T> commitments) {
         this.lWeights = lWeights;
         this.rWeights = rWeights;
         this.oWeights = oWeights;
@@ -43,7 +44,7 @@ public class ArithmeticCircuit {
         return cs;
     }
 
-    public GeneratorVector getCommitments() {
+    public GeneratorVector<T> getCommitments() {
         return commitments;
     }
 

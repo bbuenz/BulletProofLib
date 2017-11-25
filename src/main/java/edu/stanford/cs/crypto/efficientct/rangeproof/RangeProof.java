@@ -1,10 +1,10 @@
 package edu.stanford.cs.crypto.efficientct.rangeproof;
 
-import edu.stanford.cs.crypto.efficientct.util.ECConstants;
 import edu.stanford.cs.crypto.efficientct.Proof;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductProof;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
-import org.bouncycastle.math.ec.ECPoint;
+
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
@@ -12,16 +12,16 @@ import java.util.List;
 /**
  * Created by buenz on 7/1/17.
  */
-public class RangeProof implements Proof {
-    private final ECPoint aI;
-    private final ECPoint s;
-    private final GeneratorVector tCommits;
+public class RangeProof<T extends GroupElement<T>> implements Proof {
+    private final T aI;
+    private final T s;
+    private final GeneratorVector<T> tCommits;
     private final BigInteger tauX;
     private final BigInteger mu;
     private final BigInteger t;
-    private final InnerProductProof productProof;
+    private final InnerProductProof<T> productProof;
 
-    public RangeProof(ECPoint aI, ECPoint s, GeneratorVector tCommits, BigInteger tauX, BigInteger mu, BigInteger t, InnerProductProof productProof) {
+    public RangeProof(T aI, T s, GeneratorVector<T> tCommits, BigInteger tauX, BigInteger mu, BigInteger t, InnerProductProof<T> productProof) {
         this.aI = aI;
         this.s = s;
         this.tCommits = tCommits;
@@ -31,11 +31,11 @@ public class RangeProof implements Proof {
         this.productProof = productProof;
     }
 
-    public ECPoint getaI() {
+    public T getaI() {
         return aI;
     }
 
-    public ECPoint getS() {
+    public T getS() {
         return s;
     }
 
@@ -52,11 +52,11 @@ public class RangeProof implements Proof {
         return t;
     }
 
-    public InnerProductProof getProductProof() {
+    public InnerProductProof<T> getProductProof() {
         return productProof;
     }
 
-    public GeneratorVector gettCommits() {
+    public GeneratorVector<T> gettCommits() {
         return tCommits;
     }
 
@@ -64,12 +64,13 @@ public class RangeProof implements Proof {
     public byte[] serialize() {
         List<byte[]> byteArrs = new ArrayList<>();
         byteArrs.add(productProof.serialize());
-        byteArrs.add(aI.getEncoded(true));
-        byteArrs.add(s.getEncoded(true));
-        tCommits.stream().map(p -> p.getEncoded(true)).forEach(byteArrs::add);
-        byteArrs.add(tauX.mod(ECConstants.P).toByteArray());
-        byteArrs.add(mu.mod(ECConstants.P).toByteArray());
-        byteArrs.add(t.mod(ECConstants.P).toByteArray());
+        byteArrs.add(aI.canonicalRepresentation());
+        byteArrs.add(s.canonicalRepresentation());
+        tCommits.stream().map(GroupElement::canonicalRepresentation).forEach(byteArrs::add);
+        BigInteger q = tCommits.getGroup().groupOrder();
+        byteArrs.add(tauX.mod(q).toByteArray());
+        byteArrs.add(mu.mod(q).toByteArray());
+        byteArrs.add(t.mod(q).toByteArray());
 
         int totalBytes = byteArrs.stream().mapToInt(arr -> arr.length).sum();
         byte[] fullArray = new byte[totalBytes];

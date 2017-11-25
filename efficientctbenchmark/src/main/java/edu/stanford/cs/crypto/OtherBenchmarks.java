@@ -1,7 +1,6 @@
 package edu.stanford.cs.crypto;
 
 import cyclops.collections.immutable.VectorX;
-import edu.stanford.cs.crypto.efficientct.util.ECConstants;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 import org.bouncycastle.math.ec.ECPoint;

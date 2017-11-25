@@ -2,7 +2,6 @@ package edu.stanford.cs.crypto.efficientct.linearalgebra;
 
 import cyclops.collections.immutable.VectorX;
 import cyclops.companion.Monoids;
-import edu.stanford.cs.crypto.efficientct.util.ECConstants;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 
 import java.math.BigInteger;
@@ -21,16 +20,21 @@ public class FieldVector implements Iterable<BigInteger> {
         this.q = q;
     }
 
-    public static FieldVector from(VectorX<BigInteger> vectorX) {
-        return new FieldVector(vectorX, ECConstants.P);
+    private FieldVector from(VectorX<BigInteger> vectorX) {
+        return new FieldVector(vectorX, q);
     }
 
-    public static FieldVector from(Iterable<BigInteger> vectorX) {
-        return new FieldVector(VectorX.fromIterable(vectorX), ECConstants.P);
+
+    public static FieldVector from(VectorX<BigInteger> vectorX, BigInteger q) {
+        return new FieldVector(vectorX, q);
     }
 
-    public static FieldVector random(int n) {
-        return from(VectorX.generate(n, ProofUtils::randomNumber).materialize());
+    public static FieldVector from(Iterable<BigInteger> vectorX, BigInteger q) {
+        return new FieldVector(VectorX.fromIterable(vectorX), q);
+    }
+
+    public static FieldVector random(int n,BigInteger q) {
+        return from(VectorX.generate(n, ProofUtils::randomNumber).materialize(),q);
     }
 
     /**
@@ -130,8 +134,8 @@ public class FieldVector implements Iterable<BigInteger> {
         return from(a.plus(other));
     }
 
-    public static FieldVector pow(BigInteger k, int n) {
-        return FieldVector.from(VectorX.iterate(n, BigInteger.ONE, k::multiply));
+    public static FieldVector pow(BigInteger k, int n,BigInteger q) {
+        return from(VectorX.iterate(n, BigInteger.ONE, k::multiply),q);
     }
 
     @Override
@@ -151,8 +155,7 @@ public class FieldVector implements Iterable<BigInteger> {
 
         FieldVector that = (FieldVector) o;
 
-        if (a != null ? !a.equals(that.a) : that.a != null) return false;
-        return q != null ? q.equals(that.q) : that.q == null;
+        return (a != null ? a.equals(that.a) : that.a == null) && (q != null ? q.equals(that.q) : that.q == null);
     }
 
     @Override

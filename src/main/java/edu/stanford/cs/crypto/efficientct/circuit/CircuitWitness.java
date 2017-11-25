@@ -1,6 +1,7 @@
 package edu.stanford.cs.crypto.efficientct.circuit;
 
 import cyclops.collections.immutable.VectorX;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
 import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 
@@ -9,13 +10,13 @@ import java.math.BigInteger;
 /**
  * Created by buenz on 7/6/17.
  */
-public class CircuitWitness {
+public class CircuitWitness<T extends GroupElement<T>> {
     private final FieldVector l;
     private final FieldVector r;
     private final FieldVector o;
-    private final VectorX<PeddersenCommitment> commitments;
+    private final VectorX<PeddersenCommitment<T>> commitments;
 
-    public CircuitWitness(FieldVector l, FieldVector r, FieldVector o, VectorX<PeddersenCommitment> commitments) {
+    public CircuitWitness(FieldVector l, FieldVector r, FieldVector o, VectorX<PeddersenCommitment<T>> commitments) {
         this.l = l;
         this.r = r;
         this.o = o;
@@ -35,7 +36,7 @@ public class CircuitWitness {
         return o;
     }
 
-    public VectorX<PeddersenCommitment> getCommitments() {
+    public VectorX<PeddersenCommitment<T>> getCommitments() {
         return commitments;
     }
 }

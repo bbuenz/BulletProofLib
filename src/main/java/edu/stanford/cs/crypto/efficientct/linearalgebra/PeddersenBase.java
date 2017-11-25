@@ -1,28 +1,26 @@
 package edu.stanford.cs.crypto.efficientct.linearalgebra;
 
 import cyclops.collections.immutable.VectorX;
-import cyclops.function.Monoid;
-import edu.stanford.cs.crypto.efficientct.util.ECConstants;
-import org.bouncycastle.math.ec.ECPoint;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.Group;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
 
 import java.math.BigInteger;
 
 /**
  * Created by buenz on 7/2/17.
  */
-public class PeddersenBase extends GeneratorVector {
-    private static final Monoid<ECPoint> ECPOINT_SUM = Monoid.of(ECConstants.INFINITY, ECPoint::add);
-    public final ECPoint g;
-    public final ECPoint h;
+public class PeddersenBase<T extends GroupElement<T>> extends GeneratorVector<T> {
+    public final T g;
+    public final T h;
 
-    public PeddersenBase(ECPoint g, ECPoint h) {
-        super(VectorX.of(g, h));
+    public PeddersenBase(T g, T h, Group<T> group) {
+        super(VectorX.of(g, h), group);
         this.g = g;
         this.h = h;
 
     }
 
-    public ECPoint commit(BigInteger x, BigInteger r) {
+    public T commit(BigInteger x, BigInteger r) {
         return g.multiply(x).add(h.multiply(r));
     }
 
