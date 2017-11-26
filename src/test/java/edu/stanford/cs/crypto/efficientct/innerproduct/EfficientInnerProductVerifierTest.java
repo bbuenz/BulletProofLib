@@ -2,10 +2,12 @@ package edu.stanford.cs.crypto.efficientct.innerproduct;
 
 import cyclops.collections.immutable.VectorX;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.*;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.BN128Group;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.BouncyCastleECPoint;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.Group;
+import edu.stanford.cs.crypto.efficientct.circuit.groups.Secp256k1;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
-import org.bouncycastle.math.ec.ECCurve;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
