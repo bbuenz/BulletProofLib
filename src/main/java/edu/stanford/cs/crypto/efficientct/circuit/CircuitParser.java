@@ -9,10 +9,8 @@ import edu.stanford.cs.crypto.efficientct.util.CustomGson;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 
 public class CircuitParser {
 
