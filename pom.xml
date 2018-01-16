@@ -87,16 +87,17 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
+
         <dependency>
-            <groupId>org.ethereum</groupId>
-            <artifactId>ethereumj-core</artifactId>
-            <version>1.7.0-SNAPSHOT</version>
+            <groupId>akosba.jsnark</groupId>
+            <artifactId>JsnarkCircuitBuilder</artifactId>
+            <version>1.1</version>
         </dependency>
     </dependencies>
     <repositories>
         <repository>
             <id>sonatype-oss-snapshot</id>
-            <snapshots />
+            <snapshots/>
             <url>https://oss.sonatype.org/content/repositories/snapshots</url>
         </repository>
         <repository>

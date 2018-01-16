@@ -5,6 +5,8 @@ import org.bouncycastle.math.ec.ECPoint;
 import java.math.BigInteger;
 
 public class BouncyCastleECPoint implements GroupElement<BouncyCastleECPoint> {
+    public static int expCount=0;
+    public static int addCount=0;
     private final ECPoint point;
 
     public BouncyCastleECPoint(ECPoint point) {
@@ -13,11 +15,13 @@ public class BouncyCastleECPoint implements GroupElement<BouncyCastleECPoint> {
 
     @Override
     public BouncyCastleECPoint add(BouncyCastleECPoint other) {
+        ++addCount;
         return from(point.add(other.point));
     }
 
     @Override
     public BouncyCastleECPoint multiply(BigInteger exp) {
+        ++expCount;
         return from(point.multiply(exp));
     }
 

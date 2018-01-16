@@ -8,8 +8,7 @@ import edu.stanford.cs.crypto.efficientct.Verifier;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 
 /**
@@ -39,20 +38,26 @@ public class EfficientInnerProductVerifier<T extends GroupElement<T>> implements
 
         }
         int n = params.getGs().size();
+        BigInteger[] otherExponents = new BigInteger[n];
 
+        otherExponents[0] = challenges.stream().reduce(BigInteger.ONE, (l, r) -> l.multiply(r).mod(q)).modInverse(q);
+        BitSet bitSet = new BitSet();
+        Collections.reverse(challenges);
+        for (int i = 0; i < n/2; ++i) {
+            for (int j = 0; (1 << j) + i < n; ++j) {
 
-        Function<Integer, BigInteger> computeChallenge = i -> {
-            BigInteger multiplier = BigInteger.ONE;
-            for (int j = 0; j < challenges.size(); ++j) {
-                if ((i & (1 << j)) == 0) {
-                    multiplier = multiplier.multiply(inverseChallenges.get(challenges.size() - j - 1)).mod(q);
+                int i1 = i + (1 << j);
+                if (bitSet.get(i1)) {
+
                 } else {
-                    multiplier = multiplier.multiply(challenges.get(challenges.size() - j - 1)).mod(q);
+                    otherExponents[i1] = otherExponents[i].multiply(challenges.get(j).pow(2)).mod(q);
+                    bitSet.set(i1);
                 }
             }
-            return multiplier;
-        };
-        ListX<BigInteger> challengeVector = ListX.range(0, n).map(computeChallenge);
+        }
+
+
+        ListX<BigInteger> challengeVector = ListX.of(otherExponents);
         T g = params.getGs().commit(challengeVector);
         T h = params.getHs().commit(challengeVector.reverse());
         BigInteger prod = proof.getA().multiply(proof.getB()).mod(q);

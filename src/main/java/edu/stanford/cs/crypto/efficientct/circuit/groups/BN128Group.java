@@ -2,7 +2,6 @@ package edu.stanford.cs.crypto.efficientct.circuit.groups;
 
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
-import org.ethereum.crypto.zksnark.BN128G1;
 
 import java.math.BigInteger;
 

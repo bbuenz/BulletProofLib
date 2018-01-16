@@ -32,12 +32,17 @@ public class RangeProofProverTest<T extends GroupElement<T>> {
         BigInteger number = BigInteger.valueOf(5);
         BigInteger randomness = ProofUtils.randomNumber();
 
-        GeneratorParams parameters = GeneratorParams.generateParams(128,curve);
+        GeneratorParams parameters = GeneratorParams.generateParams(256,curve);
         GroupElement v = parameters.getBase().commit(number, randomness);
         PeddersenCommitment<BouncyCastleECPoint> witness = new PeddersenCommitment(parameters.getBase(),number, randomness);
+        BouncyCastleECPoint.addCount=0;
+        BouncyCastleECPoint.expCount=0;
         RangeProof proof = new RangeProofProver().generateProof(parameters, v, witness);
+        System.out.println(BouncyCastleECPoint.expCount);
+        System.out.println(BouncyCastleECPoint.addCount);
         RangeProofVerifier verifier = new RangeProofVerifier();
         verifier.verify(parameters, v, proof);
+
     }
     @Test
     public void testCompletness2() throws VerificationFailedException {

@@ -79,7 +79,6 @@ public class InnerProductProver<T extends GroupElement<T>> implements Prover<Vec
         // System.out.println("X " + x);
         // System.out.println("Xinv " + xInv);
         // System.out.println("C " +PPrime.stringRepresentation());
-        T pPrimeAlt = gPrime.commit(aPrime).add(hPrime.commit(bPrime).add(u.multiply(aPrime.innerPoduct(bPrime))));
         //System.out.println("C alt" + pPrimeAlt);
         //System.out.println(PPrime.equals(pPrimeAlt));
         return generateProof(basePrime, PPrime, aPrime, bPrime, ls, rs);

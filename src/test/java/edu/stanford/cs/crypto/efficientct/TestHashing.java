@@ -2,8 +2,6 @@ package edu.stanford.cs.crypto.efficientct;
 
 import edu.stanford.cs.crypto.efficientct.circuit.groups.BN128Group;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
-import org.ethereum.crypto.HashUtil;
-import org.ethereum.jsonrpc.TypeConverter;
 import org.junit.Test;
 
 import java.math.BigInteger;
