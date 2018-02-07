@@ -38,7 +38,7 @@ public class CircuitParser {
         }
         VectorX<BigInteger> cs = VectorX.fill(Q, BigInteger.ZERO);
         VectorX<BouncyCastleECPoint> commitments = VectorX.empty();
-        return new ArithmeticCircuit<BouncyCastleECPoint>(VectorX.fromIterable(leftWeights), VectorX.fromIterable(rightWeights), VectorX.fromIterable(outputWeights), VectorX.empty(), cs, new GeneratorVector<>(VectorX.empty(), curve));
+        return new ArithmeticCircuit<>(VectorX.fromIterable(leftWeights), VectorX.fromIterable(rightWeights), VectorX.fromIterable(outputWeights), VectorX.empty(), cs, new GeneratorVector<>(VectorX.empty(), curve));
 
     }
 }

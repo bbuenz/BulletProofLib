@@ -20,6 +20,9 @@ public class InnerProductProver<T extends GroupElement<T>> implements Prover<Vec
     @Override
     public InnerProductProof<T> generateProof(VectorBase<T> base, T c, InnerProductWitness witness) {
         int n = base.getGs().size();
+        if (!((n & (n - 1)) == 0)) {
+            throw new IllegalArgumentException("n is not a power of 2");
+        }
         return generateProof(base, c, witness.getA(), witness.getB(), new ArrayList<>(Integer.bitCount(n)), new ArrayList<>(Integer.bitCount(n)));
     }
 
@@ -63,13 +66,7 @@ public class InnerProductProver<T extends GroupElement<T>> implements Prover<Vec
         GeneratorVector<T> hPrime = hLeft.haddamard(xs).add(hRight.haddamard(xInverse));
         FieldVector aPrime = asLeft.times(x).add(asRight.times(xInv));
         FieldVector bPrime = bsLeft.times(xInv).add(bsRight.times(x));
-        if (n % 2 == 1) {
-            gPrime = gPrime.plus(gs.get(n - 1));
-            hPrime = hPrime.plus(hs.get(n - 1));
-            aPrime = aPrime.plus(as.get(n - 1));
-            bPrime = bPrime.plus(bs.get(n - 1));
 
-        }
         // System.out.println("P " + P.stringRepresentation());
         // System.out.println("PAlt "+gs.commit(as).add(hs.commit(bs)).add(u.multiply(as.innerPoduct(bs))).stringRepresentation());
         T PPrime = L.multiply(xSquare).add(R.multiply(xInvSquare)).add(P);
