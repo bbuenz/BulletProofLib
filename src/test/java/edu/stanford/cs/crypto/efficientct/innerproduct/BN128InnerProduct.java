@@ -11,6 +11,8 @@ import java.math.BigInteger;
 import java.util.stream.Collectors;
 
 public class BN128InnerProduct {
+    public static final BigInteger TWO = new BigInteger("2");
+
     @Test
     public void createInnerProductProof() {
         InnerProductProofSystem<BouncyCastleECPoint> system = new InnerProductProofSystem<>();
@@ -19,7 +21,7 @@ public class BN128InnerProduct {
         base.getGs().getVector().map(BouncyCastleECPoint::getPoint).map(ECPoint::normalize).map(p -> "=[0x" + p.getXCoord() + " , 0x" + p.getYCoord() + "];").zipWithIndex().map(t -> "garr[" + t.v2 + "]" + t.v1).printOut();
         base.getHs().getVector().map(BouncyCastleECPoint::getPoint).map(ECPoint::normalize).map(p -> "=[0x" + p.getXCoord() + " , 0x" + p.getYCoord() + "];").zipWithIndex().map(t -> "harr[" + t.v2 + "]" + t.v1).printOut();
         System.out.println(base.getH());
-        FieldVector as = FieldVector.pow(BigInteger.TWO, 256, group.groupOrder());
+        FieldVector as = FieldVector.pow(TWO, 256, group.groupOrder());
         //  System.out.println(as);
         FieldVector bs = FieldVector.pow(BigInteger.ONE, 256, group.groupOrder());
         //  System.out.println(bs);
