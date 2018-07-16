@@ -22,6 +22,7 @@ import java.util.List;
  * Created by buenz on 7/1/17.
  */
 public class SingleMultiExpRangeProofVerifier<T extends GroupElement<T>> implements Verifier<GeneratorParams<T>, T, RangeProof<T>> {
+   public static final BigInteger TWO = new BigInteger("2");
 
 
     @Override
@@ -73,7 +74,7 @@ public class SingleMultiExpRangeProofVerifier<T extends GroupElement<T>> impleme
             T r = rs.get(i);
             BigInteger xIP = ProofUtils.computeChallenge(q, l, r);
             challenges.add(xIP);
-            squareChallenges.add(xIP.modPow(BigInteger.TWO,q));
+            squareChallenges.add(xIP.modPow(TWO,q));
 
 
         }

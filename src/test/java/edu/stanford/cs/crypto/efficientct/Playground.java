@@ -24,6 +24,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Playground {
+    public static final BigInteger TWO = new BigInteger("2");
+
     @Test
     public void testPlayGround() {
         BigInteger q = new BigInteger("21888242871839275222246405745257275088696311157297823662689037894645226208583");
@@ -66,12 +68,12 @@ public class Playground {
         BigInteger sqrt = x.modPow((P.add(BigInteger.ONE)).divide(BigInteger.valueOf(4)), P);
         System.out.println(x.modPow(P.min(BigInteger.ONE).shiftRight(1), P));
         System.out.println(sqrt);
-        System.out.println(sqrt.modPow(BigInteger.TWO, P));
+        System.out.println(sqrt.modPow(TWO, P));
         System.out.println(x);
         System.out.println("Min x");
         BigInteger minX = P.min(x);
         BigInteger sqrtMin = minX.modPow(P.add(BigInteger.ONE).shiftRight(2), P);
-        System.out.println(sqrtMin.modPow(BigInteger.TWO, P));
+        System.out.println(sqrtMin.modPow(TWO, P));
         System.out.println(minX);
 
     }
@@ -102,7 +104,7 @@ public class Playground {
         BigInteger[] xs = new BigInteger[]{ProofUtils.hash("1"), ProofUtils.hash("2"), ProofUtils.hash("3"), ProofUtils.hash("4"), ProofUtils.hash("5")};
         BigInteger P = new BigInteger("21888242871839275222246405745257275088548364400416034343698204186575808495617");
         List<BigInteger> exponents = Stream.generate(() -> BigInteger.ONE).limit(32).collect(Collectors.toList());
-       String arrString= Arrays.stream(xs).map(bi->String.format("[\"0x%s\",\"0x%s\"]",bi.mod(P).toString(16),bi.modPow(BigInteger.TWO,P).toString(16))).collect(Collectors.joining(","));
+       String arrString= Arrays.stream(xs).map(bi->String.format("[\"0x%s\",\"0x%s\"]",bi.mod(P).toString(16),bi.modPow(TWO,P).toString(16))).collect(Collectors.joining(","));
 
         System.out.println("["+arrString+"]");
         int n = 32;
