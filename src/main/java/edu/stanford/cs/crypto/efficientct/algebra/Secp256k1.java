@@ -1,4 +1,4 @@
-package edu.stanford.cs.crypto.efficientct.circuit.groups;
+package edu.stanford.cs.crypto.efficientct.algebra;
 
 import org.bouncycastle.crypto.ec.CustomNamedCurves;
 import org.bouncycastle.math.ec.ECFieldElement;
@@ -14,7 +14,7 @@ public class Secp256k1 extends BouncyCastleCurve {
     }
 
     @Override
-    public BouncyCastleECPoint hashInto(BigInteger seed) {
+    public BouncyCastleECPoint mapInto(BigInteger seed) {
 
 
         ECPoint point = null;

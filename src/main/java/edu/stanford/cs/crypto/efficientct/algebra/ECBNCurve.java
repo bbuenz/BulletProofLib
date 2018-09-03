@@ -1,4 +1,4 @@
-package edu.stanford.cs.crypto.efficientct.circuit.groups;
+package edu.stanford.cs.crypto.efficientct.algebra;
 
 
 /**
@@ -44,11 +44,11 @@ public class ECBNCurve extends ECCurve.Fp {
         ECFieldElement RHS = x.multiply(x).multiply(x).add(
                 curve.getA().multiply(x)).add(curve.getB());
         return LHS.equals(RHS);
-}
+    }
 
-/**
- * Convenient BigInteger constants
- */
+    /**
+     * Convenient BigInteger constants
+     */
 
     static final BigInteger _0 = BigInteger.valueOf(0L), _1 = BigInteger
             .valueOf(1L), _2 = BigInteger.valueOf(2L), _3 = BigInteger
@@ -57,69 +57,69 @@ public class ECBNCurve extends ECCurve.Fp {
             .valueOf(7L), _9 = BigInteger.valueOf(9L), _24 = BigInteger
             .valueOf(24L);
 
-/**
- * Rabin-Miller certainty used for primality testing
- */
+    /**
+     * Rabin-Miller certainty used for primality testing
+     */
 
     static final int PRIMALITY_CERTAINTY = 20;
 
-/**
- * Prime of the underlying finite field F_q
- */
-        BigInteger q;
+    /**
+     * Prime of the underlying finite field F_q
+     */
+    BigInteger q;
 
-        /**
- * BN index -- the curve BN(u) is defined by the following parameters:
- *
- * t = 6*u^2 + 1 p = 36*u^4 + 36*u^3 + 24*u^2 + 6*u + 1 n = 36*u^4 + 36*u^3
- * + 18*u^2 + 6*u + 1
- *
- * BN(u)/GF(p): y^2 = x^3 + b, #BN(u)(GF(p)) = n, n = p + 1 - t.
- *
- * Restrictions: p = 3 (mod 4) and p = 4 (mod 9).
- */
+    /**
+     * BN index -- the curve BN(u) is defined by the following parameters:
+     * <p>
+     * t = 6*u^2 + 1 p = 36*u^4 + 36*u^3 + 24*u^2 + 6*u + 1 n = 36*u^4 + 36*u^3
+     * + 18*u^2 + 6*u + 1
+     * <p>
+     * BN(u)/GF(p): y^2 = x^3 + b, #BN(u)(GF(p)) = n, n = p + 1 - t.
+     * <p>
+     * Restrictions: p = 3 (mod 4) and p = 4 (mod 9).
+     */
 
     private BigInteger u;
 
-/**
- * Trace of the Frobenius endomorphism
- */
+    /**
+     * Trace of the Frobenius endomorphism
+     */
 
     private BigInteger t;
 
-/**
- * Primitive cube root of unity mod p
- */
+    /**
+     * Primitive cube root of unity mod p
+     */
 
     private BigInteger zeta;
 
-/**
- * Prime curve order
- */
+    /**
+     * Prime curve order
+     */
 
     private BigInteger n;
 
-/**
- * Compute BN parameters for a given field size, which must be a multiple of
- * 8 between 56 and 512 (inclusive).
- *
- * The BN parameter u is the largest one with the smallest possible Hamming
- * weight, leading to a field prime p satisfying both p = 3 (mod 4) and p =
- * 4 (mod 9), speeding up the computation of square and cube roots in both
- * F_p and F_{p^2}. Besides, for i \in F_{p^2} such that i^2 + 1 = 0, the
- * element v = 1 + i is neither a square nor a cube, so that one can
- * represent F_{p^2m} as F_{p^2}[z]/(z^m - 1/v) or F_{p^2}[z]/(z^m - v) for
- * m = 2, 3, 6.
- *
- * The standard curve is E(F_p): y^2 = x^3 + 3, whose default generator is G
- * = (1, 2). Its (sextic) twist is E'(F_{p^2}): y'^2 = x'^3 + 3v, whose
- * default generator has the form G' = [p-1+t]*(1, y') for some y'.
- *
- * The standard isomorphism psi: E'(F_{p^2}) -> E(F_{p^12}) is defined as
- * psi(x', y') = (x'*z^2, y'*z^3) for the first representation of F_{p^12}
- * above, and as psi(x', y') = (x'/z^2, y'/z^3) = (x'*z^4/v, y'*z^3/v) for
- * the second representation.
- */
+    /**
+     * Compute BN parameters for a given field size, which must be a multiple of
+     * 8 between 56 and 512 (inclusive).
+     * <p>
+     * The BN parameter u is the largest one with the smallest possible Hamming
+     * weight, leading to a field prime p satisfying both p = 3 (mod 4) and p =
+     * 4 (mod 9), speeding up the computation of square and cube roots in both
+     * F_p and F_{p^2}. Besides, for i \in F_{p^2} such that i^2 + 1 = 0, the
+     * element v = 1 + i is neither a square nor a cube, so that one can
+     * represent F_{p^2m} as F_{p^2}[z]/(z^m - 1/v) or F_{p^2}[z]/(z^m - v) for
+     * m = 2, 3, 6.
+     * <p>
+     * The standard curve is E(F_p): y^2 = x^3 + 3, whose default generator is G
+     * = (1, 2). Its (sextic) twist is E'(F_{p^2}): y'^2 = x'^3 + 3v, whose
+     * default generator has the form G' = [p-1+t]*(1, y') for some y'.
+     * <p>
+     * The standard isomorphism psi: E'(F_{p^2}) -> E(F_{p^12}) is defined as
+     * psi(x', y') = (x'*z^2, y'*z^3) for the first representation of F_{p^12}
+     * above, and as psi(x', y') = (x'/z^2, y'/z^3) = (x'*z^4/v, y'*z^3/v) for
+     * the second representation.
+     */
 
 
     public ECBNCurve(BigInteger fieldBits) {
@@ -140,16 +140,13 @@ public class ECBNCurve extends ECCurve.Fp {
         System.out.println("BNCurve y^2 = x^3 + 3 created with index u = " + u
                 + ", prime q = " + q + ", trace t = " + t
                 + ", curve order n = " + n + " (" + n.bitLength() + " bits).");
-}
-
+    }
 
 
     public static BigInteger calcQ(BigInteger u) {
         return u.add(_1).multiply(_6.multiply(u)).add(_4).multiply(u).add(_1)
                 .multiply(_6.multiply(u)).add(_1);
-}
-
-
+    }
 
 
     public static BigInteger calcU(int fieldBits) {
@@ -450,63 +447,53 @@ public class ECBNCurve extends ECCurve.Fp {
                         "Field size in bits must be a multiple of 8 between 56 and 512");
         }
         return u;
-}
-
+    }
 
 
     public BigInteger getQ() {
         return q;
-}
-
+    }
 
 
     public BigInteger getIndex() {
         return u;
-}
-
+    }
 
 
     public BigInteger getTrace() {
         return t;
-}
-
+    }
 
 
     public BigInteger getZeta() {
         return zeta;
-}
-
+    }
 
 
     public BigInteger getOrder() {
         return n;
-}
-
+    }
 
 
     public int getFieldSize() {
         return q.bitLength();
-}
-
+    }
 
 
     public ECFieldElement fromBigInteger(BigInteger x) {
         return new ECFieldElement.Fp(this.q, x);
-}
-
+    }
 
 
     public ECPoint createPoint(BigInteger x, BigInteger y,
                                boolean withCompression) {
         return null;
-}
-
+    }
 
 
     public ECPoint decodePoint(byte[] encoded) {
         return null;
-}
-
+    }
 
 
     public boolean equals(Object o) {
@@ -518,6 +505,6 @@ public class ECBNCurve extends ECCurve.Fp {
         }
         ECBNCurve other = (ECBNCurve) o;
         return q.equals(other.getQ()) && u.equals(other.getIndex());
-}
+    }
 
 }

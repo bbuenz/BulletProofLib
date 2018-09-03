@@ -2,9 +2,9 @@ package edu.stanford.cs.crypto.efficientct.circuitproof;
 
 import cyclops.collections.immutable.VectorX;
 import edu.stanford.cs.crypto.efficientct.GeneratorParams;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.BouncyCastleECPoint;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.Group;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.Secp256k1;
+import edu.stanford.cs.crypto.efficientct.algebra.BouncyCastleECPoint;
+import edu.stanford.cs.crypto.efficientct.algebra.Group;
+import edu.stanford.cs.crypto.efficientct.algebra.Secp256k1;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
 import edu.stanford.cs.crypto.efficientct.circuit.*;

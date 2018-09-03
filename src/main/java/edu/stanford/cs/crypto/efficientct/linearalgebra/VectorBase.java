@@ -1,6 +1,6 @@
 package edu.stanford.cs.crypto.efficientct.linearalgebra;
 
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 
 import java.math.BigInteger;
 
@@ -17,6 +17,7 @@ public class VectorBase<T extends GroupElement<T>> {
         this.hs = hs;
         this.h = h;
     }
+
     public T commit(Iterable<BigInteger> gExp, BigInteger blinding) {
         return gs.commit(gExp).add(h.multiply(blinding));
 
@@ -42,6 +43,6 @@ public class VectorBase<T extends GroupElement<T>> {
 
     @Override
     public String toString() {
-        return String.format("[gs:%s,hs:%s,h:%s]",gs,hs,h);
+        return String.format("[gs:%s,hs:%s,h:%s]", gs, hs, h);
     }
 }

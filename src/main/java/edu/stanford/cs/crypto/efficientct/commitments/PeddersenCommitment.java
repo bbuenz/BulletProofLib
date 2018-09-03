@@ -1,6 +1,6 @@
 package edu.stanford.cs.crypto.efficientct.commitments;
 
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 
@@ -17,8 +17,8 @@ public class PeddersenCommitment<T extends GroupElement<T>> implements Homomorph
 
     public PeddersenCommitment(PeddersenBase<T> base, BigInteger x, BigInteger r) {
         this.base = base;
-        this.x = x;
-        this.r = r;
+        this.x = x.mod(base.getGroup().groupOrder());
+        this.r = r.mod(base.getGroup().groupOrder());
     }
 
     public PeddersenCommitment(PeddersenBase<T> base, BigInteger x) {

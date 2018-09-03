@@ -5,7 +5,7 @@ import edu.stanford.cs.crypto.efficientct.FieldPolynomial;
 import edu.stanford.cs.crypto.efficientct.FieldVectorPolynomial;
 import edu.stanford.cs.crypto.efficientct.GeneratorParams;
 import edu.stanford.cs.crypto.efficientct.Prover;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
 import edu.stanford.cs.crypto.efficientct.commitments.PolyCommitment;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductProof;
@@ -20,6 +20,7 @@ import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by buenz on 7/6/17.
@@ -27,10 +28,9 @@ import java.util.List;
 public class CircuitProver<T extends GroupElement<T>> implements Prover<GeneratorParams<T>, ArithmeticCircuit<T>, CircuitWitness<T>, CircuitProof<T>> {
 
     @Override
-    public CircuitProof<T> generateProof(GeneratorParams<T> parameter, ArithmeticCircuit<T> circuit, CircuitWitness<T> witness) {
-        int m = circuit.getCommitments().size();
+    public CircuitProof<T> generateProof(GeneratorParams<T> parameter, ArithmeticCircuit<T> circuit, CircuitWitness<T> witness, Optional<BigInteger> salt) {
         int Q = circuit.getlWeights().size();
-        BigInteger q =parameter.getGroup().groupOrder();
+        BigInteger q = parameter.getGroup().groupOrder();
 
         VectorBase<T> vectorBase = parameter.getVectorBase();
         PeddersenBase<T> base = parameter.getBase();
@@ -45,17 +45,23 @@ public class CircuitProver<T extends GroupElement<T>> implements Prover<Generato
         FieldVector o = witness.getO();
         T aO = vectorBase.commit(o, beta);
 
-        FieldVector sL = FieldVector.random(n,q);
-        FieldVector sR = FieldVector.random(n,q);
+        FieldVector sL = FieldVector.random(n, q);
+        FieldVector sR = FieldVector.random(n, q);
         BigInteger rho = ProofUtils.randomNumber();
         T s = vectorBase.commit(sL, sR, rho);
+        BigInteger y;
 
-        BigInteger y = ProofUtils.computeChallenge(q,aI, aO, s);
-        FieldVector ys = FieldVector.from(VectorX.iterate(n, BigInteger.ONE, y::multiply),q);
+        if (salt.isPresent()) {
+            y = ProofUtils.computeChallenge(q, salt.get(), aI, aO, s);
+        } else {
+            y = ProofUtils.computeChallenge(q, aI, aO, s);
 
-        BigInteger z = ProofUtils.hash("z", y);
+        }
+        FieldVector ys = FieldVector.from(VectorX.iterate(n, BigInteger.ONE, y::multiply), q);
 
-        FieldVector zs = FieldVector.from(VectorX.iterate(Q, z, z::multiply).map(bi -> bi.mod(q)),q);
+        BigInteger z = ProofUtils.computeChallenge(q,y);
+
+        FieldVector zs = FieldVector.from(VectorX.iterate(Q, z, z::multiply).map(bi -> bi.mod(q)), q);
 
         FieldVector zTimesR = zs.vectorMatrixProduct(circuit.getrWeights());
         FieldVector zRWeights = ys.invert().hadamard(zTimesR);
@@ -72,27 +78,27 @@ public class CircuitProver<T extends GroupElement<T>> implements Prover<Generato
         FieldVectorPolynomial rPoly = new FieldVectorPolynomial(r0, r1, null, r3);
 
         FieldPolynomial tPoly = lPoly.innerProduct(rPoly);
-       List< PeddersenCommitment<T>> peddersenCommitments = new ArrayList<>();
+        List<PeddersenCommitment<T>> peddersenCommitments = new ArrayList<>();
         for (int i = 0; i < 7; ++i) {
             if (i == 0 || i == 2) {
                 peddersenCommitments.add(new PeddersenCommitment<>(base, tPoly.getCoefficients()[i], BigInteger.ZERO));
             } else {
-                peddersenCommitments.add( new PeddersenCommitment<>(base, tPoly.getCoefficients()[i], ProofUtils.randomNumber()));
+                peddersenCommitments.add(new PeddersenCommitment<>(base, tPoly.getCoefficients()[i], ProofUtils.randomNumber()));
             }
         }
 
         PolyCommitment<T> polyCommitment = new PolyCommitment<>(VectorX.fromIterable(peddersenCommitments));
-        BigInteger x = ProofUtils.computeChallenge(q,polyCommitment.getCommitments());
+        BigInteger x = ProofUtils.computeChallenge(q, z, polyCommitment.getCommitments());
         PeddersenCommitment mainCommitment = polyCommitment.evaluate(x);
 
         BigInteger mu = alpha.multiply(x).add(beta.multiply(x.pow(2))).add(rho.multiply(x.pow(3))).mod(q);
         BigInteger t = mainCommitment.getX();
-        FieldVector commitTimesWeights = FieldVector.from(witness.getCommitments().map(PeddersenCommitment::getR),q).matrixVectorProduct(circuit.getCommitmentWeights());
+        FieldVector commitTimesWeights = FieldVector.from(witness.getCommitments().map(PeddersenCommitment::getR), q).matrixVectorProduct(circuit.getCommitmentWeights());
         BigInteger zGamma = zs.innerPoduct(commitTimesWeights);
         BigInteger tauX = mainCommitment.getR().add(x.pow(2).multiply(zGamma));
 
 
-        BigInteger uChallenge = ProofUtils.challengeFromints(q,tauX, mu, t);
+        BigInteger uChallenge = ProofUtils.challengeFromints(q, x, tauX, mu, t);
         T u = base.g.multiply(uChallenge);
         GeneratorVector<T> hs = vectorBase.getHs();
         GeneratorVector<T> gs = vectorBase.getGs();
@@ -106,9 +112,9 @@ public class CircuitProver<T extends GroupElement<T>> implements Prover<Generato
         InnerProductProver<T> prover = new InnerProductProver<>();
         InnerProductWitness innerProductWitness = new InnerProductWitness(l, r);
 
-        InnerProductProof<T> proof = prover.generateProof(primeBase, P, innerProductWitness);
+        InnerProductProof<T> proof = prover.generateProof(primeBase, P, innerProductWitness, uChallenge);
 
-        return new CircuitProof<>(aI, aO, s, new GeneratorVector<>(polyCommitment.getCommitments(),parameter.getGroup()), tauX, mu, t, proof);
+        return new CircuitProof<>(aI, aO, s, new GeneratorVector<>(polyCommitment.getCommitments(), parameter.getGroup()), tauX, mu, t, proof);
 
     }
 }

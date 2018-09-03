@@ -4,8 +4,8 @@ import cyclops.collections.immutable.VectorX;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.Group;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.Group;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 
 /**
@@ -35,10 +35,10 @@ public class GeneratorParams<T extends GroupElement<T>> implements PublicParamet
     }
 
     public static <T extends GroupElement<T>> GeneratorParams<T> generateParams(int size, Group<T> group) {
-        VectorX<T> gs = VectorX.range(0, size).map(i -> "G" + i).map(ProofUtils::hash).map(group::hashInto);
-        VectorX<T> hs = VectorX.range(0, size).map(i -> "H" + i).map(ProofUtils::hash).map(group::hashInto);
-        T g = group.hashInto(ProofUtils.hash("G"));
-        T h = group.hashInto(ProofUtils.hash("H"));
+        VectorX<T> gs = VectorX.range(0, size).map(i -> ProofUtils.paddedHash("G", i)).map(group::mapInto);
+        VectorX<T> hs = VectorX.range(0, size).map(i -> ProofUtils.paddedHash("H", i)).map(group::mapInto);
+        T g = group.mapInto(ProofUtils.hash("G"));
+        T h = group.mapInto(ProofUtils.hash("V"));
         VectorBase<T> vectorBase = new VectorBase<>(new GeneratorVector<>(gs, group), new GeneratorVector<>(hs, group), h);
         PeddersenBase<T> base = new PeddersenBase<>(g, h, group);
         return new GeneratorParams<>(vectorBase, base, group);

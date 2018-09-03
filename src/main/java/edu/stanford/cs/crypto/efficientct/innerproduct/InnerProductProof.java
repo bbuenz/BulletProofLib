@@ -1,7 +1,7 @@
 package edu.stanford.cs.crypto.efficientct.innerproduct;
 
 import edu.stanford.cs.crypto.efficientct.Proof;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -18,8 +18,8 @@ public class InnerProductProof<T extends GroupElement<T>> implements Proof {
     private final BigInteger b;
 
     public InnerProductProof(List<T> l, List<T> r, BigInteger a, BigInteger b) {
-        L = l;
-        R = r;
+        this.L = l;
+        this.R = r;
         this.a = a;
         this.b = b;
     }

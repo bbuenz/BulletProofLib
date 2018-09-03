@@ -1,25 +1,18 @@
 package edu.stanford.cs.crypto.efficientct.circuitproof;
 
 import com.google.gson.*;
-import cyclops.collections.immutable.VectorX;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
 import edu.stanford.cs.crypto.efficientct.circuit.*;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.BouncyCastleECPoint;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.Group;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.Secp256k1;
-import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
+import edu.stanford.cs.crypto.efficientct.algebra.BouncyCastleECPoint;
+import edu.stanford.cs.crypto.efficientct.algebra.Group;
+import edu.stanford.cs.crypto.efficientct.algebra.Secp256k1;
 import edu.stanford.cs.crypto.efficientct.util.CustomGson;
-import edu.stanford.cs.crypto.efficientct.util.ECConstants;
 import edu.stanford.cs.crypto.efficientct.GeneratorParams;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
-import org.bouncycastle.math.ec.ECPoint;
-import org.bouncycastle.util.encoders.Base64;
 import org.junit.Test;
 
 import java.math.BigInteger;
-import java.nio.file.Paths;
-import java.util.List;
 
 public class CircuitParserTest {
     private Group<BouncyCastleECPoint> group = new Secp256k1();

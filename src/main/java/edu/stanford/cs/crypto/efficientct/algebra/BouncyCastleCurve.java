@@ -1,4 +1,4 @@
-package edu.stanford.cs.crypto.efficientct.circuit.groups;
+package edu.stanford.cs.crypto.efficientct.algebra;
 
 import org.bouncycastle.math.ec.ECCurve;
 import org.bouncycastle.math.ec.ECPoint;
@@ -10,10 +10,13 @@ public abstract class BouncyCastleCurve implements Group<BouncyCastleECPoint> {
     private final BouncyCastleECPoint generator;
 
     public BouncyCastleCurve(ECCurve curve, ECPoint generator) {
-        this.curve = curve;
-        this.generator = new BouncyCastleECPoint(generator);
+        this(curve, new BouncyCastleECPoint(generator));
     }
 
+    public BouncyCastleCurve(ECCurve curve, BouncyCastleECPoint generator) {
+        this.curve = curve;
+        this.generator = generator;
+    }
 
 
     @Override

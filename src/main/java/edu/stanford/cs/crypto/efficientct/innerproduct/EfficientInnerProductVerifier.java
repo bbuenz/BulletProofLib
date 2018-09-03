@@ -1,7 +1,7 @@
 package edu.stanford.cs.crypto.efficientct.innerproduct;
 
 import cyclops.collections.mutable.ListX;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
 import edu.stanford.cs.crypto.efficientct.Verifier;
@@ -9,7 +9,6 @@ import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
 
 import java.math.BigInteger;
 import java.util.*;
-import java.util.function.Function;
 
 /**
  * Created by buenz on 6/29/17.
@@ -20,21 +19,22 @@ public class EfficientInnerProductVerifier<T extends GroupElement<T>> implements
      * Only works if params has size 2^k for some k.
      */
     @Override
-    public void verify(VectorBase<T> params, T c, InnerProductProof<T> proof) throws VerificationFailedException {
+    public void verify(VectorBase<T> params, T c, InnerProductProof<T> proof,Optional<BigInteger> salt) throws VerificationFailedException {
         List<T> ls = proof.getL();
         List<T> rs = proof.getR();
         List<BigInteger> challenges = new ArrayList<>(ls.size());
-        List<BigInteger> inverseChallenges = new ArrayList<>(ls.size());
         BigInteger q = params.getGs().getGroup().groupOrder();
+        BigInteger previousChallenge=salt.orElse(BigInteger.ZERO);
         for (int i = 0; i < ls.size(); ++i) {
             T l = ls.get(i);
             T r = rs.get(i);
-            BigInteger x = ProofUtils.computeChallenge(q, l, c, r);
+            BigInteger x = ProofUtils.computeChallenge(q,previousChallenge, l, r);
+            System.out.println("X "+ x);
             challenges.add(x);
             BigInteger xInv = x.modInverse(q);
-            inverseChallenges.add(xInv);
 
             c = l.multiply(x.pow(2)).add(r.multiply(xInv.pow(2))).add(c);
+            previousChallenge=x;
 
         }
         int n = params.getGs().size();
@@ -43,7 +43,7 @@ public class EfficientInnerProductVerifier<T extends GroupElement<T>> implements
         otherExponents[0] = challenges.stream().reduce(BigInteger.ONE, (l, r) -> l.multiply(r).mod(q)).modInverse(q);
         BitSet bitSet = new BitSet();
         Collections.reverse(challenges);
-        for (int i = 0; i < n/2; ++i) {
+        for (int i = 0; i < n / 2; ++i) {
             for (int j = 0; (1 << j) + i < n; ++j) {
 
                 int i1 = i + (1 << j);

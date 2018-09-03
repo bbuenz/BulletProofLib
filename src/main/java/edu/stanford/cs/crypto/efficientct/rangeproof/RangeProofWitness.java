@@ -9,6 +9,7 @@ public class RangeProofWitness {
     private final BigInteger number;
 
     private final BigInteger randomness;
+
     public RangeProofWitness(BigInteger number, BigInteger randomness) {
         this.number = number;
         this.randomness = randomness;

@@ -1,7 +1,7 @@
 package edu.stanford.cs.crypto.efficientct.rangeproof;
 
 import edu.stanford.cs.crypto.efficientct.Proof;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductProof;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 
@@ -81,10 +81,12 @@ public class RangeProof<T extends GroupElement<T>> implements Proof {
         }
         return fullArray;
     }
-    public int numInts(){
+
+    public int numInts() {
         return 5;
     }
-    public int numElements(){
-        return 2+ tCommits.size()+productProof.getL().size()+productProof.getR().size();
+
+    public int numElements() {
+        return 2 + tCommits.size() + productProof.getL().size() + productProof.getR().size();
     }
 }

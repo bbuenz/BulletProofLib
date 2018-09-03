@@ -12,11 +12,11 @@ public class MultiRangeProofWitness {
     private final VectorX<PeddersenCommitment> commitments;
 
 
-
     public MultiRangeProofWitness(VectorX<PeddersenCommitment> commitments) {
 
         this.commitments = commitments;
     }
+
     public VectorX<PeddersenCommitment> getCommitments() {
         return commitments;
     }

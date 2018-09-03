@@ -25,7 +25,7 @@ public class FieldVectorPolynomial {
     }
 
     public FieldPolynomial innerProduct(FieldVectorPolynomial other) {
-        BigInteger[] newCoefficients = new BigInteger[coefficients.size() + other.coefficients.size()-1];
+        BigInteger[] newCoefficients = new BigInteger[coefficients.size() + other.coefficients.size() - 1];
         Arrays.fill(newCoefficients, BigInteger.ZERO);
         for (int i = 0; i < coefficients.size(); ++i) {
             FieldVector aCoefficient = coefficients.get(i);

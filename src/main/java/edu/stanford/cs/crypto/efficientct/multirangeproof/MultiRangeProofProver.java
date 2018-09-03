@@ -5,7 +5,7 @@ import edu.stanford.cs.crypto.efficientct.FieldPolynomial;
 import edu.stanford.cs.crypto.efficientct.FieldVectorPolynomial;
 import edu.stanford.cs.crypto.efficientct.GeneratorParams;
 import edu.stanford.cs.crypto.efficientct.Prover;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
 import edu.stanford.cs.crypto.efficientct.commitments.PolyCommitment;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductProof;
@@ -20,6 +20,7 @@ import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -30,7 +31,7 @@ public class MultiRangeProofProver<T extends GroupElement<T>> implements Prover<
 
 
     @Override
-    public RangeProof<T> generateProof(GeneratorParams<T> parameter, GeneratorVector<T> commitments, VectorX<PeddersenCommitment<T>> witness) {
+    public RangeProof<T> generateProof(GeneratorParams<T> parameter, GeneratorVector<T> commitments, VectorX<PeddersenCommitment<T>> witness, Optional<BigInteger> salt) {
         int m = commitments.size();
         VectorBase<T> vectorBase = parameter.getVectorBase();
         PeddersenBase<T> base = parameter.getBase();
@@ -51,7 +52,14 @@ public class MultiRangeProofProver<T extends GroupElement<T>> implements Prover<
         T s = vectorBase.commit(sL, sR, rho);
 
         List<T> challengeArr = Stream.concat(commitments.stream(), Stream.of(a, s)).collect(Collectors.toList());
-        BigInteger y = ProofUtils.computeChallenge(q, challengeArr);
+        BigInteger y;
+
+        if(salt.isPresent()) {
+             y = ProofUtils.computeChallenge(q,salt.get(), challengeArr);
+        }else {
+             y = ProofUtils.computeChallenge(q, challengeArr);
+
+        }
         //y^n
         FieldVector ys = FieldVector.pow(y, n, q);
 
@@ -62,7 +70,7 @@ public class MultiRangeProofProver<T extends GroupElement<T>> implements Prover<
         //2^n
         VectorX<BigInteger> twoVector = VectorX.iterate(bitsPerNumber, BigInteger.ONE, bi -> bi.shiftLeft(1));
         FieldVector twos = FieldVector.from(twoVector, q);
-        //2^n \cdot z || 2^n \cdot z^2 ...
+        //2^n \cdot z^2 || 2^n \cdot z^3 ...
         FieldVector twoTimesZs = FieldVector.from(zs.getVector().flatMap(twos::times), q);
         //l(X)
         FieldVector l0 = aL.add(z.negate());
@@ -78,7 +86,7 @@ public class MultiRangeProofProver<T extends GroupElement<T>> implements Prover<
         //Commit(t)
         BigInteger[] tPolyCoefficients = tPoly.getCoefficients();
         PolyCommitment<T> polyCommitment = PolyCommitment.from(base, tPolyCoefficients[0], VectorX.of(tPolyCoefficients).skip(1));
-        BigInteger x = ProofUtils.computeChallenge(q, polyCommitment.getCommitments());
+        BigInteger x = ProofUtils.computeChallenge(q,z, polyCommitment.getCommitments());
         PeddersenCommitment mainCommitment = polyCommitment.evaluate(x);
 
         BigInteger mu = alpha.add(rho.multiply(x)).mod(q);
@@ -86,7 +94,7 @@ public class MultiRangeProofProver<T extends GroupElement<T>> implements Prover<
         BigInteger t = mainCommitment.getX();
         BigInteger tauX = mainCommitment.getR().add(zs.innerPoduct(witness.map(PeddersenCommitment::getR)));
 
-        BigInteger uChallenge = ProofUtils.challengeFromints(q,tauX, mu, t);
+        BigInteger uChallenge = ProofUtils.challengeFromints(q, x, tauX, mu, t);
         T u = base.g.multiply(uChallenge);
         GeneratorVector<T> hs = vectorBase.getHs();
         GeneratorVector<T> gs = vectorBase.getGs();
@@ -99,7 +107,7 @@ public class MultiRangeProofProver<T extends GroupElement<T>> implements Prover<
 
         InnerProductProver<T> prover = new InnerProductProver<>();
         InnerProductWitness innerProductWitness = new InnerProductWitness(l, r);
-        InnerProductProof<T> proof = prover.generateProof(primeBase, P, innerProductWitness);
+        InnerProductProof<T> proof = prover.generateProof(primeBase, P, innerProductWitness,uChallenge);
         return new RangeProof<>(a, s, new GeneratorVector<>(polyCommitment.getCommitments(), parameter.getGroup()), tauX, mu, t, proof);
     }
 }

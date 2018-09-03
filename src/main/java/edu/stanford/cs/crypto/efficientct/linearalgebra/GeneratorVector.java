@@ -2,8 +2,8 @@ package edu.stanford.cs.crypto.efficientct.linearalgebra;
 
 import cyclops.collections.immutable.VectorX;
 import cyclops.function.Monoid;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.Group;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.Group;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 
 import java.math.BigInteger;
 import java.util.Iterator;
@@ -15,12 +15,12 @@ import java.util.stream.Stream;
 public class GeneratorVector<T extends GroupElement<T>> implements Iterable<T> {
     private final VectorX<T> gs;
     private final Group<T> group;
-    private final Monoid<T> ECPOINT_SUM ;
+    private final Monoid<T> ECPOINT_SUM;
 
-    public GeneratorVector(VectorX<T> gs,Group<T> group) {
+    public GeneratorVector(VectorX<T> gs, Group<T> group) {
         this.gs = gs;
-        this.group=group;
-        ECPOINT_SUM=Monoid.of(group.zero(), T::add);
+        this.group = group;
+        ECPOINT_SUM = Monoid.of(group.zero(), T::add);
     }
 
     private GeneratorVector<T> from(VectorX<T> gs) {
@@ -68,7 +68,7 @@ public class GeneratorVector<T extends GroupElement<T>> implements Iterable<T> {
 
     @Override
     public String toString() {
-        return gs.map(T::stringRepresentation).toString();
+        return gs.toString();
     }
 
     @Override
@@ -92,7 +92,8 @@ public class GeneratorVector<T extends GroupElement<T>> implements Iterable<T> {
     public Group<T> getGroup() {
         return group;
     }
-    public static <T extends GroupElement<T>> GeneratorVector<T> from(VectorX<T> gs,Group<T> group) {
+
+    public static <T extends GroupElement<T>> GeneratorVector<T> from(VectorX<T> gs, Group<T> group) {
         return new GeneratorVector<>(gs, group);
     }
 }

@@ -3,7 +3,7 @@ package edu.stanford.cs.crypto.efficientct.circuit;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import cyclops.collections.immutable.VectorX;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.BouncyCastleECPoint;
+import edu.stanford.cs.crypto.efficientct.algebra.BouncyCastleECPoint;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
 import edu.stanford.cs.crypto.efficientct.util.CustomGson;
 

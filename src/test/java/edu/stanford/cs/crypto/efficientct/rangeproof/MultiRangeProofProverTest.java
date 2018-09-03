@@ -2,16 +2,15 @@ package edu.stanford.cs.crypto.efficientct.rangeproof;
 
 import cyclops.collections.immutable.VectorX;
 import edu.stanford.cs.crypto.efficientct.GeneratorParams;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.BouncyCastleCurve;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.BouncyCastleECPoint;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.Secp256k1;
+import edu.stanford.cs.crypto.efficientct.algebra.BouncyCastleCurve;
+import edu.stanford.cs.crypto.efficientct.algebra.BouncyCastleECPoint;
+import edu.stanford.cs.crypto.efficientct.algebra.Secp256k1;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
 import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.PeddersenBase;
 import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofProver;
-import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofSystem;
 import edu.stanford.cs.crypto.efficientct.multirangeproof.MultiRangeProofVerifier;
 import org.junit.Test;
 

@@ -1,11 +1,9 @@
 package edu.stanford.cs.crypto.efficientct.circuit;
 
 import cyclops.collections.immutable.VectorX;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
-
-import java.math.BigInteger;
 
 /**
  * Created by buenz on 7/6/17.

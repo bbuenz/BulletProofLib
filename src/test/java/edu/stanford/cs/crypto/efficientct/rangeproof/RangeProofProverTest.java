@@ -1,18 +1,16 @@
 package edu.stanford.cs.crypto.efficientct.rangeproof;
 
 import edu.stanford.cs.crypto.efficientct.GeneratorParams;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.*;
+import edu.stanford.cs.crypto.efficientct.algebra.*;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
 import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
-import org.bouncycastle.math.ec.ECPoint;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
 import java.math.BigInteger;
-import java.util.Arrays;
+import java.util.Optional;
 
 
 /**
@@ -22,7 +20,7 @@ import java.util.Arrays;
 public class RangeProofProverTest<T extends GroupElement<T>> {
     @Parameterized.Parameters
     public static Object[] data() {
-        return new Object[] { new Secp256k1(),new BN128Group()};
+        return new Object[] { new Secp256k1(),new BN128Group(),new C0C0Group()};
     }
     @Parameterized.Parameter
     public Group<?> curve;
@@ -34,7 +32,7 @@ public class RangeProofProverTest<T extends GroupElement<T>> {
 
         GeneratorParams parameters = GeneratorParams.generateParams(256,curve);
         GroupElement v = parameters.getBase().commit(number, randomness);
-        PeddersenCommitment<BouncyCastleECPoint> witness = new PeddersenCommitment(parameters.getBase(),number, randomness);
+        PeddersenCommitment<?> witness = new PeddersenCommitment<>(parameters.getBase(),number, randomness);
         BouncyCastleECPoint.addCount=0;
         BouncyCastleECPoint.expCount=0;
         RangeProof proof = new RangeProofProver().generateProof(parameters, v, witness);
@@ -46,13 +44,14 @@ public class RangeProofProverTest<T extends GroupElement<T>> {
     }
     @Test
     public void testCompletness2() throws VerificationFailedException {
+       //Something fails here
         BigInteger number = BigInteger.valueOf(100);
         BigInteger randomness = ProofUtils.randomNumber();
 
         GeneratorParams parameters = GeneratorParams.generateParams(256,curve);
         GroupElement v = parameters.getBase().commit(number, randomness);
         PeddersenCommitment witness = new PeddersenCommitment(parameters.getBase(),number, randomness);
-        RangeProof proof = new RangeProofProver().generateProof(parameters, v, witness);
+        RangeProof proof = new FixedRandomnessRangeProofProver(1).generateProof(parameters, v, witness,Optional.empty());
         RangeProofVerifier verifier = new RangeProofVerifier();
         verifier.verify(parameters, v, proof);
     }

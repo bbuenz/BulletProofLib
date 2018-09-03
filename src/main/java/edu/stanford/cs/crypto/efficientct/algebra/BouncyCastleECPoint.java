@@ -1,15 +1,15 @@
-package edu.stanford.cs.crypto.efficientct.circuit.groups;
+package edu.stanford.cs.crypto.efficientct.algebra;
 
 import org.bouncycastle.math.ec.ECPoint;
 
 import java.math.BigInteger;
 
 public class BouncyCastleECPoint implements GroupElement<BouncyCastleECPoint> {
-    public static int expCount=0;
-    public static int addCount=0;
-    private final ECPoint point;
+    public static int expCount = 0;
+    public static int addCount = 0;
+    protected final ECPoint point;
 
-    public BouncyCastleECPoint(ECPoint point) {
+    BouncyCastleECPoint(ECPoint point) {
         this.point = point;
     }
 
@@ -32,7 +32,8 @@ public class BouncyCastleECPoint implements GroupElement<BouncyCastleECPoint> {
 
     @Override
     public byte[] canonicalRepresentation() {
-        return point.getEncoded(true);
+
+        return point.normalize().getEncoded(true);
     }
 
     @Override
@@ -40,7 +41,7 @@ public class BouncyCastleECPoint implements GroupElement<BouncyCastleECPoint> {
         return point.normalize().toString();
     }
 
-    private static  BouncyCastleECPoint from(ECPoint point) {
+    private static BouncyCastleECPoint from(ECPoint point) {
         return new BouncyCastleECPoint(point);
     }
 
@@ -50,7 +51,8 @@ public class BouncyCastleECPoint implements GroupElement<BouncyCastleECPoint> {
 
     @Override
     public String toString() {
-        return point.normalize().toString();
+        ECPoint normalized = point.normalize();
+        return String.format("0x%s, 0x%s", normalized.getXCoord(), normalized.getYCoord());
     }
 
     @Override

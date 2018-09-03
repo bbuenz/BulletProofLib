@@ -30,7 +30,7 @@ public final class ECConstants {
         // G = BITCOIN_CURVE.createPoint(BigInteger.ONE, BigInteger.valueOf(2));
         BITCOIN_CURVE = new SecP256K1Curve();
         G = CustomNamedCurves.getByName("secp256k1").getG();
-        P=BITCOIN_CURVE.getOrder();
+        P = BITCOIN_CURVE.getOrder();
 
         INFINITY = BITCOIN_CURVE.getInfinity();
     }

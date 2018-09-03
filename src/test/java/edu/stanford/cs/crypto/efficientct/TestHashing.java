@@ -1,6 +1,6 @@
 package edu.stanford.cs.crypto.efficientct;
 
-import edu.stanford.cs.crypto.efficientct.circuit.groups.BN128Group;
+import edu.stanford.cs.crypto.efficientct.algebra.BN128Group;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import org.junit.Test;
 

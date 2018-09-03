@@ -33,8 +33,8 @@ public class FieldVector implements Iterable<BigInteger> {
         return new FieldVector(VectorX.fromIterable(vectorX), q);
     }
 
-    public static FieldVector random(int n,BigInteger q) {
-        return from(VectorX.generate(n, ProofUtils::randomNumber).materialize(),q);
+    public static FieldVector random(int n, BigInteger q) {
+        return from(VectorX.generate(n, ProofUtils::randomNumber).materialize(), q);
     }
 
     /**
@@ -103,7 +103,7 @@ public class FieldVector implements Iterable<BigInteger> {
     }
 
     public BigInteger sum() {
-        return a.reduce(Monoids.bigIntSum);
+        return a.reduce(Monoids.bigIntSum).mod(q);
     }
 
     public FieldVector invert() {
@@ -134,8 +134,8 @@ public class FieldVector implements Iterable<BigInteger> {
         return from(a.plus(other));
     }
 
-    public static FieldVector pow(BigInteger k, int n,BigInteger q) {
-        return from(VectorX.iterate(n, BigInteger.ONE, k::multiply),q);
+    public static FieldVector pow(BigInteger k, int n, BigInteger q) {
+        return from(VectorX.iterate(n, BigInteger.ONE, k::multiply), q);
     }
 
     @Override

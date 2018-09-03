@@ -3,7 +3,7 @@ package edu.stanford.cs.crypto.efficientct.rangeproof;
 import edu.stanford.cs.crypto.efficientct.GeneratorParams;
 import edu.stanford.cs.crypto.efficientct.ProofSystem;
 import edu.stanford.cs.crypto.efficientct.commitments.PeddersenCommitment;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 
 /**
  * Created by buenz on 7/1/17.

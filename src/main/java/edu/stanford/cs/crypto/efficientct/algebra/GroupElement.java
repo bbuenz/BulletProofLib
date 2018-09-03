@@ -1,4 +1,4 @@
-package edu.stanford.cs.crypto.efficientct.circuit.groups;
+package edu.stanford.cs.crypto.efficientct.algebra;
 
 import java.math.BigInteger;
 

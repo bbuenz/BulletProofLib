@@ -1,8 +1,8 @@
 package edu.stanford.cs.crypto.efficientct.linearalgebra;
 
 import cyclops.collections.immutable.VectorX;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.Group;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.Group;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 
 import java.math.BigInteger;
 

@@ -1,7 +1,7 @@
 package edu.stanford.cs.crypto.efficientct.innerproduct;
 
 import cyclops.collections.mutable.ListX;
-import edu.stanford.cs.crypto.efficientct.circuit.groups.GroupElement;
+import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.Prover;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.FieldVector;
@@ -11,6 +11,7 @@ import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
 import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Created by buenz on 6/29/17.
@@ -18,15 +19,16 @@ import java.util.List;
 public class InnerProductProver<T extends GroupElement<T>> implements Prover<VectorBase<T>, T, InnerProductWitness, InnerProductProof<T>> {
 
     @Override
-    public InnerProductProof<T> generateProof(VectorBase<T> base, T c, InnerProductWitness witness) {
+    public InnerProductProof<T> generateProof(VectorBase<T> base, T c, InnerProductWitness witness, Optional<BigInteger> salt) {
         int n = base.getGs().size();
         if (!((n & (n - 1)) == 0)) {
             throw new IllegalArgumentException("n is not a power of 2");
         }
-        return generateProof(base, c, witness.getA(), witness.getB(), new ArrayList<>(Integer.bitCount(n)), new ArrayList<>(Integer.bitCount(n)));
+        //THIS SHOULD BE A REAL CHALLENGE
+        return generateProof(base, c, witness.getA(), witness.getB(), new ArrayList<>(Integer.bitCount(n)), new ArrayList<>(Integer.bitCount(n)),salt.orElse(BigInteger.ZERO));
     }
 
-    private InnerProductProof<T> generateProof(VectorBase<T> base, T P, FieldVector as, FieldVector bs, List<T> ls, List<T> rs) {
+    private InnerProductProof<T> generateProof(VectorBase<T> base, T P, FieldVector as, FieldVector bs, List<T> ls, List<T> rs,BigInteger previousChallenge) {
         int n = as.size();
         if (n == 1) {
             return new InnerProductProof<>(ls, rs, as.firstValue(), bs.firstValue());
@@ -56,7 +58,9 @@ public class InnerProductProver<T extends GroupElement<T>> implements Prover<Vec
         R = R.add(u.multiply(cR));
         rs.add(R);
         BigInteger q = gs.getGroup().groupOrder();
-        BigInteger x = ProofUtils.computeChallenge(q, L, P, R);
+
+        BigInteger x = ProofUtils.computeChallenge(q,previousChallenge, L, R);
+        System.out.println("x " +x);
         BigInteger xInv = x.modInverse(q);
         BigInteger xSquare = x.pow(2).mod(q);
         BigInteger xInvSquare = xInv.pow(2).mod(q);
@@ -78,7 +82,7 @@ public class InnerProductProver<T extends GroupElement<T>> implements Prover<Vec
         // System.out.println("C " +PPrime.stringRepresentation());
         //System.out.println("C alt" + pPrimeAlt);
         //System.out.println(PPrime.equals(pPrimeAlt));
-        return generateProof(basePrime, PPrime, aPrime, bPrime, ls, rs);
+        return generateProof(basePrime, PPrime, aPrime, bPrime, ls, rs,x);
     }
 
 }

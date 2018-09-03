@@ -14,7 +14,6 @@ public class FieldPolynomial {
     }
 
 
-
     public BigInteger[] getCoefficients() {
         return coefficients;
     }
