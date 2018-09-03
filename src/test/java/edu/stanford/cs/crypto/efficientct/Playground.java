@@ -1,5 +1,6 @@
 package edu.stanford.cs.crypto.efficientct;
 
+import cyclops.collections.mutable.ListX;
 import edu.stanford.cs.crypto.efficientct.algebra.*;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.util.TonelliShanks;
@@ -26,16 +27,10 @@ public class Playground {
     public void testPlayGround() {
         BigInteger a=new BigInteger("ee6efb5a4ec248b5a6ef16f9793864bb5e3efda61f72f959795777f7184adfbc",16);
         BigInteger b=new BigInteger("9d10acf2556e4601da02910c082bf6cc65564327b32b40f7718af73fc096cd65",16);
-        System.out.println(a.bitLength());
-        System.out.println(b.bitLength());
-        System.out.println(a.toByteArray()[0]);
-        System.out.println(b.toByteArray()[0]);
-        System.out.println(b.toByteArray()[32]);
-        BigInteger q= BN128Group.ORDER;
-        BigInteger hash=ProofUtils.computeChallenge(q,new BigInteger[]{a,b});
-        System.out.println(hash.toString(16));
-        System.out.println(hash);
-        System.out.println(hash.mod(BN128Group.ORDER));
+     ListX<BigInteger> bigIntList=   ListX.of(a,b);
+    ListX<BigInteger> other= bigIntList.map(bi->bi.mod(BigInteger.TEN));
+        System.out.println(bigIntList);
+        System.out.println(other);
     }
     @Test
     public void testHashingOnCurve() {

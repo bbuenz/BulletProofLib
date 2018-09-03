@@ -19,24 +19,24 @@ public class EfficientInnerProductVerifier<T extends GroupElement<T>> implements
      * Only works if params has size 2^k for some k.
      */
     @Override
-    public void verify(VectorBase<T> params, T c, InnerProductProof<T> proof,Optional<BigInteger> salt) throws VerificationFailedException {
+    public void verify(VectorBase<T> params, T c, InnerProductProof<T> proof, Optional<BigInteger> salt) throws VerificationFailedException {
         List<T> ls = proof.getL();
         List<T> rs = proof.getR();
         List<BigInteger> challenges = new ArrayList<>(ls.size());
         BigInteger q = params.getGs().getGroup().groupOrder();
-        BigInteger previousChallenge=salt.orElse(BigInteger.ZERO);
+        BigInteger previousChallenge = salt.orElse(BigInteger.ZERO);
         for (int i = 0; i < ls.size(); ++i) {
             T l = ls.get(i);
             T r = rs.get(i);
-            BigInteger x = ProofUtils.computeChallenge(q,previousChallenge, l, r);
-            System.out.println("X "+ x);
+            BigInteger x = ProofUtils.computeChallenge(q, previousChallenge, l, r);
             challenges.add(x);
             BigInteger xInv = x.modInverse(q);
 
             c = l.multiply(x.pow(2)).add(r.multiply(xInv.pow(2))).add(c);
-            previousChallenge=x;
+            previousChallenge = x;
 
         }
+        System.out.printf("chals=%s\n",challenges);
         int n = params.getGs().size();
         BigInteger[] otherExponents = new BigInteger[n];
 
@@ -58,10 +58,15 @@ public class EfficientInnerProductVerifier<T extends GroupElement<T>> implements
 
 
         ListX<BigInteger> challengeVector = ListX.of(otherExponents);
-        T g = params.getGs().commit(challengeVector);
-        T h = params.getHs().commit(challengeVector.reverse());
+        ListX<BigInteger> sleft = challengeVector.map(proof.getA()::multiply);
+        ListX<BigInteger> sright = challengeVector.reverse().map(proof.getB()::multiply);
+        System.out.printf("sl[10]=%s\n",sleft.get(10));
+        System.out.printf("sr[77]=%s\n",sright.get(77));
+
         BigInteger prod = proof.getA().multiply(proof.getB()).mod(q);
-        T cProof = g.multiply(proof.getA()).add(h.multiply(proof.getB())).add(params.getH().multiply(prod));
+        T g = params.getGs().commit(sleft);
+        T h = params.getHs().commit(sright);
+        T cProof = g.add(h).add(params.getH().multiply(prod));
         equal(c, cProof, "cTotal (%s) not equal to cProof (%s)");
     }
 }

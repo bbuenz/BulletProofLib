@@ -30,8 +30,6 @@ public class C0C0InnerProduct {
         BouncyCastleECPoint.addCount = 0;
         BouncyCastleECPoint.expCount = 0;
         InnerProductProof<BouncyCastleECPoint> productProof = system.getProver().generateProof(base, point, witness);
-        System.out.println(BouncyCastleECPoint.addCount);
-        System.out.println(BouncyCastleECPoint.expCount);
         System.out.println(productProof.getL().size());
         String lstring = "ls=[" + productProof.getL().stream().map(group::toMontgomery).collect(Collectors.joining(",")) + "]";
         System.out.println(lstring);
