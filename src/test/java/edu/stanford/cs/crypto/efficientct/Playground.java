@@ -25,13 +25,14 @@ import java.util.stream.Stream;
 public class Playground {
     @Test
     public void testPlayGround() {
-        BigInteger a=new BigInteger("ee6efb5a4ec248b5a6ef16f9793864bb5e3efda61f72f959795777f7184adfbc",16);
-        BigInteger b=new BigInteger("9d10acf2556e4601da02910c082bf6cc65564327b32b40f7718af73fc096cd65",16);
-     ListX<BigInteger> bigIntList=   ListX.of(a,b);
-    ListX<BigInteger> other= bigIntList.map(bi->bi.mod(BigInteger.TEN));
+        BigInteger a = new BigInteger("ee6efb5a4ec248b5a6ef16f9793864bb5e3efda61f72f959795777f7184adfbc", 16);
+        BigInteger b = new BigInteger("9d10acf2556e4601da02910c082bf6cc65564327b32b40f7718af73fc096cd65", 16);
+        ListX<BigInteger> bigIntList = ListX.of(a, b);
+        ListX<BigInteger> other = bigIntList.map(bi -> bi.mod(BigInteger.TEN));
         System.out.println(bigIntList);
         System.out.println(other);
     }
+
     @Test
     public void testHashingOnCurve() {
         Curve25519 curve = new Curve25519();

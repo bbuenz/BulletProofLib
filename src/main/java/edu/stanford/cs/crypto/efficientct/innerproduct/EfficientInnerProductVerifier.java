@@ -1,6 +1,8 @@
 package edu.stanford.cs.crypto.efficientct.innerproduct;
 
 import cyclops.collections.mutable.ListX;
+import edu.stanford.cs.crypto.efficientct.algebra.BouncyCastleECPoint;
+import edu.stanford.cs.crypto.efficientct.algebra.C0C0Group;
 import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
@@ -9,6 +11,8 @@ import edu.stanford.cs.crypto.efficientct.linearalgebra.VectorBase;
 
 import java.math.BigInteger;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Created by buenz on 6/29/17.
@@ -36,7 +40,7 @@ public class EfficientInnerProductVerifier<T extends GroupElement<T>> implements
             previousChallenge = x;
 
         }
-        System.out.printf("chals=%s\n",challenges);
+        System.out.printf("chals=%s\n", challenges);
         int n = params.getGs().size();
         BigInteger[] otherExponents = new BigInteger[n];
 
@@ -55,18 +59,43 @@ public class EfficientInnerProductVerifier<T extends GroupElement<T>> implements
                 }
             }
         }
+        List<BigInteger> challengeVector2 = new ArrayList<>();
+        for (int i = 0; i < n; ++i) {
+            BigInteger bigIntI = BigInteger.valueOf(i);
+            BigInteger ithChallenge = BigInteger.ONE;
+            for (int j = 0; j < challenges.size(); ++j) {
+                if (bigIntI.testBit(j)) {
+                    ithChallenge = ithChallenge.multiply(challenges.get(j)).mod(q);
+                } else {
+                    ithChallenge = ithChallenge.multiply(challenges.get(j).modInverse(q)).mod(q);
 
+                }
+            }
+            challengeVector2.add(ithChallenge);
+        }
 
         ListX<BigInteger> challengeVector = ListX.of(otherExponents);
+        System.out.println(challengeVector.equals(challengeVector2));
+        System.out.println(challengeVector);
+        System.out.println(challengeVector2);
         ListX<BigInteger> sleft = challengeVector.map(proof.getA()::multiply);
         ListX<BigInteger> sright = challengeVector.reverse().map(proof.getB()::multiply);
-        System.out.printf("sl[10]=%s\n",sleft.get(10));
-        System.out.printf("sr[77]=%s\n",sright.get(77));
+        System.out.printf("s[0]=%s\n", challengeVector.get(0));
+        System.out.printf("s[13]=%s\n", challengeVector.get(13));
+
+        System.out.printf("sl[10]=%s\n", sleft.get(10));
+        System.out.printf("sr[77]=%s\n", sright.get(77));
 
         BigInteger prod = proof.getA().multiply(proof.getB()).mod(q);
         T g = params.getGs().commit(sleft);
+
         T h = params.getHs().commit(sright);
         T cProof = g.add(h).add(params.getH().multiply(prod));
+        if (g instanceof BouncyCastleECPoint) {
+            System.out.printf("prod_i g_i^(s_i)=%s\n", new C0C0Group().toMontgomery((BouncyCastleECPoint) g));
+            System.out.printf(new C0C0Group().toMontgomery((BouncyCastleECPoint) g));
+
+        }
         equal(c, cProof, "cTotal (%s) not equal to cProof (%s)");
     }
 }

@@ -86,6 +86,28 @@ public class C0C0Test {
     }
 
     @Test
+    public void testMontgomery() {
+        C0C0Group bn128Group = new C0C0Group();
+        BouncyCastleECPoint point = bn128Group.generator().multiply(BigInteger.TEN);
+        System.out.println(bn128Group.toMontgomery(bn128Group.generator()));
+        System.out.println(bn128Group.toMontgomery(point));
+    }
+    @Test
+    public void testMultiExpMontgomery() {
+        C0C0Group bn128Group = new C0C0Group();
+        BouncyCastleECPoint g = bn128Group.mapInto(ProofUtils.hash("g"));
+        BouncyCastleECPoint h = bn128Group.mapInto(ProofUtils.hash("h"));
+        BigInteger exp1=new BigInteger(256, new Random(13));
+        BigInteger exp2=new BigInteger(256, new Random(14));
+        System.out.printf("exp1=%s\n",exp1);
+        System.out.printf("exp2=%s\n",exp2);
+        System.out.printf("g=EMont(%s)\n",bn128Group.toMontgomery(g));
+        System.out.printf("h=EMont(%s)\n",bn128Group.toMontgomery(h));
+        System.out.printf("exp1*g+exp2*h==EMont([%s])\n",bn128Group.toMontgomery(g.multiply(exp1).add(h.multiply(exp2))));
+    }
+
+
+    @Test
     public void additionMult() {
         C0C0Group c0C0Group = new C0C0Group();
         BouncyCastleECPoint g = c0C0Group.mapInto(ProofUtils.hash("1234"));
@@ -116,15 +138,15 @@ public class C0C0Test {
     @Test
     public void testMultiplier() {
         C0C0Group c0C0Group = new C0C0Group();
-        ECMultiplier montgomeryLadder=new DoubleAddMultiplier();
-        ECCurve curve= c0C0Group.getCurve().configure().setMultiplier(montgomeryLadder ).create();
+        ECMultiplier montgomeryLadder = new DoubleAddMultiplier();
+        ECCurve curve = c0C0Group.getCurve().configure().setMultiplier(montgomeryLadder).create();
 
         BigInteger seed = BigInteger.valueOf(3);
         System.out.println(seed);
         BouncyCastleECPoint x = c0C0Group.mapInto(seed);
         System.out.println(x);
         System.out.println(x.getPoint().isValid());
-       ECPoint result= montgomeryLadder.multiply(x.getPoint(),c0C0Group.groupOrder());
+        ECPoint result = montgomeryLadder.multiply(x.getPoint(), c0C0Group.groupOrder());
         System.out.println(result);
         System.out.println(result.isValid());
         System.out.println(result.isInfinity());

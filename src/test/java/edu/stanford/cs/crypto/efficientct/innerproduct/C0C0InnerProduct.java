@@ -26,7 +26,7 @@ public class C0C0InnerProduct {
         InnerProductWitness witness = new InnerProductWitness(as, bs);
         BouncyCastleECPoint point = base.commit(as, bs, as.innerPoduct(bs));
         System.out.println("inner product"+as.innerPoduct(bs));
-        System.out.println("c=" + group.toMontgomery(point));
+        System.out.println("P=" + group.toMontgomery(point));
         BouncyCastleECPoint.addCount = 0;
         BouncyCastleECPoint.expCount = 0;
         InnerProductProof<BouncyCastleECPoint> productProof = system.getProver().generateProof(base, point, witness);
