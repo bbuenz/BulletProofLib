@@ -22,7 +22,7 @@ public class Secp256k1 extends BouncyCastleCurve {
         do {
             ECFieldElement x = new SecP256K1FieldElement(seed.mod(groupOrder()));
 
-            ECFieldElement rhs = x.square().multiply(x.add(curve.getA())).add(curve.getB());
+            ECFieldElement rhs = x.multiply(x.square().add(curve.getA())).add(curve.getB());
 
             ECFieldElement y = rhs.sqrt();
             if (y != null) {
