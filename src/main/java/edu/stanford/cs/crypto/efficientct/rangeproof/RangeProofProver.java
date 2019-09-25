@@ -64,7 +64,7 @@ public class RangeProofProver<T extends GroupElement<T>> implements Prover<Gener
         FieldVector twoTimesZSquared = twos.times(zSquared);
         FieldVector r0 = ys.hadamard(aR.add(z)).add(twoTimesZSquared);
         FieldVector r1 = sR.hadamard(ys);
-        BigInteger k = ys.sum().multiply(z.subtract(zSquared)).subtract(zCubed.shiftLeft(n).subtract(zCubed));
+        BigInteger k = ys.sum().multiply(z.subtract(zSquared)).subtract(zCubed.shiftLeft(n).subtract(zCubed)).mod(q);
         BigInteger t0 = k.add(zSquared.multiply(number)).mod(q);
         BigInteger t1 = l1.innerPoduct(r0).add(l0.innerPoduct(r1));
         BigInteger t2 = l1.innerPoduct(r1);

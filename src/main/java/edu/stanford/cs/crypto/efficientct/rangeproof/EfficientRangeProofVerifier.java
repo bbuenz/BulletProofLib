@@ -51,8 +51,8 @@ public class EfficientRangeProofVerifier<T extends GroupElement<T>> implements V
         BigInteger tauX = proof.getTauX();
         BigInteger mu = proof.getMu();
         BigInteger t = proof.getT();
-        BigInteger k = ys.sum().multiply(z.subtract(zSquared)).subtract(zCubed.shiftLeft(n).subtract(zCubed));
-        T lhs = base.commit(t.subtract(k), tauX);
+        BigInteger k = ys.sum().multiply(z.subtract(zSquared)).subtract(zCubed.shiftLeft(n).subtract(zCubed)).mod(q);
+        T lhs = base.commit(t.subtract(k).mod(q), tauX);
 
         T rhs = tCommits.commit(Arrays.asList(x, x.pow(2))).add(input.multiply(zSquared));
         equal(lhs, rhs, "Polynomial identity check failed, LHS: %s, RHS %s");
