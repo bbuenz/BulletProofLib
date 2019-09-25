@@ -90,15 +90,6 @@ public class RangeProofProver<T extends GroupElement<T>> implements Prover<Gener
         InnerProductProver<T> prover = new InnerProductProver<>();
         InnerProductWitness innerProductWitness = new InnerProductWitness(l, r);
         InnerProductProof<T> proof = prover.generateProof(primeBase, P, innerProductWitness,uChallenge);
-        System.out.println("y " +y);
-        System.out.println("z " +z);
-
-        System.out.println("x " +x);
-        System.out.println("u " +uChallenge);
-        T lhs = base.commit(t.subtract(k), tauX);
-        System.out.println(lhs);
-        T rhs = new GeneratorVector<>(polyCommitment.getCommitments(),parameter.getGroup()).commit(Arrays.asList(x, x.pow(2))).add(commitment.multiply(zSquared));
-        System.out.println(rhs);
         return new RangeProof<>(a, s, new GeneratorVector<T>(polyCommitment.getCommitments(), parameter.getGroup()), tauX, mu, t, proof);
     }
 }
