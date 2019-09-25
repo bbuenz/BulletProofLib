@@ -22,10 +22,12 @@ public class SigmaProtocolVerifier<T extends GroupElement<T>> implements Verifie
         T C = input.getStatement().getOutL();
         T CBar = input.getStatement().getInL();
         T D = input.getStatement().getInOutR();
+        T HL = input.getHL();
+        T HR = input.getHR();
         BigInteger z = input.getZ();
         BigInteger zSquared = z.pow(2).mod(q);
         BigInteger zCubed = zSquared.multiply(z).mod(q);
-
+        BigInteger zFourth = zCubed.multiply(z).mod(q);
 
         BigInteger c = proof.getC();
         BigInteger minusC = c.negate().mod(q);
@@ -38,6 +40,7 @@ public class SigmaProtocolVerifier<T extends GroupElement<T>> implements Verifie
         T ADiff = y.subtract(yBar).multiply(sR).add(C.subtract(CBar).multiply(minusC));
         //T CCommit=CL.add(C.multiply(zMin1)).multiply(proof.getC()).add(D.multiply(zMin1.negate()).subtract(CR).multiply(sX)).multiply(zSquared);
         T cCommit = C.multiply(c.multiply(zSquared)).subtract(CRNew.multiply(sX.multiply(zCubed))).add(CLNew.multiply(c.multiply(zCubed))).subtract(D.multiply(sX.multiply(zSquared)));
+        cCommit = cCommit.add(HL.multiply(c.multiply(zFourth))).subtract(HR.multiply(sX.multiply(zFourth)));
         T At = g.multiply(input.getT().multiply(c)).add(params.h.multiply(input.getTauX().multiply(c))).subtract(cCommit).subtract(input.gettCommits().multiply(c));
         System.out.printf("Assert.equal(0x%s,As[0].X,\"As[0]\");\n",((BN128Point)Ay).getPoint().normalize().getXCoord());
         System.out.printf("Assert.equal(0x%s,As[1].X,\"As[1]\");\n",((BN128Point)AD).getPoint().normalize().getXCoord());

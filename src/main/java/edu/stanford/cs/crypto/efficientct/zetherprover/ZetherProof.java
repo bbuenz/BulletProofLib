@@ -5,6 +5,7 @@ import edu.stanford.cs.crypto.efficientct.algebra.GroupElement;
 import edu.stanford.cs.crypto.efficientct.innerproduct.ExtendedInnerProductProof;
 import edu.stanford.cs.crypto.efficientct.innerproduct.InnerProductProof;
 import edu.stanford.cs.crypto.efficientct.linearalgebra.GeneratorVector;
+import edu.stanford.cs.crypto.efficientct.util.ProofUtils;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ import java.util.List;
 public class ZetherProof<T extends GroupElement<T>> implements Proof {
     private final T aI;
     private final T s;
+    private final T HL;
+    private final T HR;
     private final GeneratorVector<T> tCommits;
     private final BigInteger t;
     private final BigInteger tauX;
@@ -22,9 +25,11 @@ public class ZetherProof<T extends GroupElement<T>> implements Proof {
     private final ExtendedInnerProductProof<T> productProof;
 
 
-    public ZetherProof(T aI, T s, GeneratorVector<T> tCommits, BigInteger t, BigInteger tauX, BigInteger mu, SigmaProof sigmaProof, ExtendedInnerProductProof<T> productProof) {
+    public ZetherProof(T aI, T s, T HL, T HR, GeneratorVector<T> tCommits, BigInteger t, BigInteger tauX, BigInteger mu, SigmaProof sigmaProof, ExtendedInnerProductProof<T> productProof) {
         this.aI = aI;
         this.s = s;
+        this.HL = HL;
+        this.HR = HR;
         this.tCommits = tCommits;
         this.t = t;
         this.tauX = tauX;
@@ -41,6 +46,9 @@ public class ZetherProof<T extends GroupElement<T>> implements Proof {
         return s;
     }
 
+    public T getHL() { return HL; }
+
+    public T getHR() { return HR; }
 
     public BigInteger getT() {
         return t;
@@ -75,9 +83,13 @@ public class ZetherProof<T extends GroupElement<T>> implements Proof {
         byteArrs.add(productProof.serialize());
         byteArrs.add(aI.canonicalRepresentation());
         byteArrs.add(s.canonicalRepresentation());
+        byteArrs.add(HL.canonicalRepresentation());
+        byteArrs.add(HR.canonicalRepresentation());
         tCommits.stream().map(GroupElement::canonicalRepresentation).forEach(byteArrs::add);
         BigInteger q = tCommits.getGroup().groupOrder();
-        byteArrs.add(t.mod(q).toByteArray());
+        byteArrs.add(t.mod(q).toByteArray()); // warning: this and the below might wind up shorter than you expect
+        byteArrs.add(tauX.mod(q).toByteArray());
+        byteArrs.add(mu.mod(q).toByteArray());
         int totalBytes = byteArrs.stream().mapToInt(arr -> arr.length).sum();
         byte[] fullArray = new byte[totalBytes];
         int currIndex = 0;

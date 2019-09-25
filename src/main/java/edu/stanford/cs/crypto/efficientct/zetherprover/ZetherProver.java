@@ -36,20 +36,23 @@ public class ZetherProver<T extends GroupElement<T>> implements Prover<Generator
         FieldVector aR = aL.subtract(VectorX.fill(n, BigInteger.ONE));
         BigInteger alpha = ProofUtils.randomNumber();
         T a = vectorBase.commit(aL, aR, alpha);
-        // FieldVector sR = FieldVector.from(VectorX.generate(n, ProofUtils::randomNumber), q);
-        // FieldVector sL = FieldVector.from(VectorX.generate(n, ProofUtils::randomNumber), q);
-        FieldVector sL = FieldVector.pow(BigInteger.ZERO, n, q);
-        FieldVector sR = FieldVector.pow(BigInteger.ZERO, n, q);
+        FieldVector sR = FieldVector.from(VectorX.generate(n, ProofUtils::randomNumber), q);
+        FieldVector sL = FieldVector.from(VectorX.generate(n, ProofUtils::randomNumber), q);
 
         BigInteger rho = ProofUtils.randomNumber();
         T s = vectorBase.commit(sL, sR, rho);
+
+        BigInteger gamma = ProofUtils.randomNumber();
+        BigInteger rGamma = ProofUtils.randomNumber();
+        T HL = base.h.multiply(gamma).add(zetherStatement.getY().multiply(rGamma));
+        T HR = base.g.multiply(rGamma);
         BigInteger y;
         BigInteger statementHash=ProofUtils.computeChallenge(q, zetherStatement.getY(), zetherStatement.getyBar(), zetherStatement.getBalanceCommitNewL(), zetherStatement.getBalanceCommitNewR(), zetherStatement.getInL(), zetherStatement.getOutL(), zetherStatement.getInOutR());
         if (salt.isPresent()) {
 
-            y = ProofUtils.computeChallenge(q,new BigInteger[]{ salt.get(),statementHash} , a, s);
+            y = ProofUtils.computeChallenge(q,new BigInteger[]{ salt.get(),statementHash} , a, s, HL, HR);
         } else {
-            y = ProofUtils.computeChallenge(q,statementHash, a, s);
+            y = ProofUtils.computeChallenge(q,statementHash, a, s, HL, HR);
 
         }
         System.out.printf("Assert.equal(chals[0],%s,\"y\");\n", y);
@@ -91,8 +94,8 @@ public class ZetherProver<T extends GroupElement<T>> implements Prover<Generator
         BigInteger zSum = zs.sum().multiply(z).mod(q);
         BigInteger k = ys.sum().multiply(z.subtract(zs.get(0))).subtract(zSum.shiftLeft(n / 2).subtract(zSum)).mod(q);
         System.out.printf("Assert.equal(0x%s,delta,\"delta\");\n",k.toString(16));
-        BigInteger tauX = evalCommit.getR();
-        SigmaProtocolStatement<T> sigmaStatement = new SigmaProtocolStatement<>(zetherStatement, evalCommit.getCommitment().subtract(base.g.multiply(tPolyCoefficients[0])), t.subtract(k), tauX, z);
+        BigInteger tauX = zs.get(1).multiply(z).multiply(gamma).add(evalCommit.getR()).mod(q); // z^4 * gamma + evalCommit
+        SigmaProtocolStatement<T> sigmaStatement = new SigmaProtocolStatement<>(zetherStatement, evalCommit.getCommitment().subtract(base.g.multiply(tPolyCoefficients[0])), HL, HR, t.subtract(k), tauX, z);
         SigmaProtocolWitness sigmaWitness = new SigmaProtocolWitness(witness.getX(), witness.getR());
         SigmaProof sigmaProof = protocolProver.generateProof(base, sigmaStatement, sigmaWitness, x);
 
@@ -111,7 +114,7 @@ public class ZetherProver<T extends GroupElement<T>> implements Prover<Generator
         InnerProductWitness innerProductWitness = new InnerProductWitness(l, r);
         ExtendedInnerProductProof<T> ipProof = prover.generateProof(primeBase, P, innerProductWitness, uChallenge);
         GeneratorVector<T> tCommits = new GeneratorVector<>(polyCommitment.getCommitments(), hs.getGroup());
-        return new ZetherProof<>(a, s, tCommits, t, tauX, mu, sigmaProof, ipProof);
+        return new ZetherProof<>(a, s, HL, HR, tCommits, t, tauX, mu, sigmaProof, ipProof);
 
 
     }

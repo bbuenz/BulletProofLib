@@ -34,15 +34,17 @@ public class ZetherVerifier<T extends GroupElement<T>> implements Verifier<Gener
         int n = vectorBase.getGs().size();
         T a = proof.getaI();
         T s = proof.getS();
+        T HL = proof.getHL();
+        T HR = proof.getHR();
 
         BigInteger q = params.getGroup().groupOrder();
         BigInteger y;
         BigInteger statementHash=ProofUtils.computeChallenge(q, zetherStatement.getY(), zetherStatement.getyBar(), zetherStatement.getBalanceCommitNewL(), zetherStatement.getBalanceCommitNewR(), zetherStatement.getInL(), zetherStatement.getOutL(), zetherStatement.getInOutR());
         if (salt.isPresent()) {
 
-            y = ProofUtils.computeChallenge(q,new BigInteger[]{ salt.get(),statementHash} , a, s);
+            y = ProofUtils.computeChallenge(q,new BigInteger[]{ salt.get(),statementHash} , a, s, HL, HR);
         } else {
-            y = ProofUtils.computeChallenge(q,statementHash, a, s);
+            y = ProofUtils.computeChallenge(q,statementHash, a, s, HL, HR);
 
         }
         FieldVector ys = FieldVector.from(VectorX.iterate(n, BigInteger.ONE, y::multiply), q);
@@ -68,7 +70,7 @@ public class ZetherVerifier<T extends GroupElement<T>> implements Verifier<Gener
         BigInteger t = proof.getT();
         BigInteger mu = proof.getMu();
         BigInteger tauX = proof.getTauX();
-        SigmaProtocolStatement<T> sigmaStatement = new SigmaProtocolStatement<>(zetherStatement, tEval, t.subtract(k), tauX, z);
+        SigmaProtocolStatement<T> sigmaStatement = new SigmaProtocolStatement<>(zetherStatement, tEval, proof.getHL(), proof.getHR(), t.subtract(k), tauX, z);
         SigmaProof sigmaProof = proof.getSigmaProof();
         sigmaVerifier.verify(base, sigmaStatement, sigmaProof, x);
         BigInteger uChallenge = ProofUtils.challengeFromints(q, sigmaProof.getC(), t, tauX, mu);

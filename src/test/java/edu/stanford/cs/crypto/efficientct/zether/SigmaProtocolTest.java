@@ -1,5 +1,6 @@
 package edu.stanford.cs.crypto.efficientct.zether;
 
+import edu.stanford.cs.crypto.efficientct.Proof;
 import edu.stanford.cs.crypto.efficientct.VerificationFailedException;
 import edu.stanford.cs.crypto.efficientct.algebra.BN128Group;
 import edu.stanford.cs.crypto.efficientct.algebra.BN128Point;
@@ -45,16 +46,21 @@ public class SigmaProtocolTest {
         BigInteger t = ProofUtils.randomNumber();
         BigInteger tauX = ProofUtils.randomNumber();
         BN128Point h = group.mapInto(ProofUtils.hash("V"));
+        BigInteger gamma = ProofUtils.randomNumber();
+        BigInteger rGamma = ProofUtils.randomNumber();
+        BN128Point HL = h.multiply(gamma).add(y.multiply(rGamma));
+        BN128Point HR = g.multiply(rGamma);
         BigInteger zSquared = z.pow(2).mod(group.groupOrder());
         BigInteger zCubed = zSquared.multiply(z).mod(group.groupOrder());
+        BigInteger zFourth = zCubed.multiply(z).mod(group.groupOrder());
 
-        BN128Point tCommitment = g.multiply(t.subtract(b.multiply(zSquared)).subtract(bStar.multiply(zCubed))).add(h.multiply(tauX));
+        BN128Point tCommitment = g.multiply(t.subtract(b.multiply(zSquared)).subtract(bStar.multiply(zCubed))).add(h.multiply(tauX.subtract(gamma.multiply(zFourth))));
 
 
         BN128Point CLNew = CL.subtract(C);
         BN128Point CRNew = CR.subtract(D);
         ZetherStatement<BN128Point> zetherStatement = new ZetherStatement<>(CLNew, CRNew, C, CHat, D, y, yBar);
-        statement = new SigmaProtocolStatement<>(zetherStatement, tCommitment, t, tauX, z);
+        statement = new SigmaProtocolStatement<>(zetherStatement, tCommitment, HL, HR, t, tauX, z);
         witness = new SigmaProtocolWitness(x, r);
         base = new PeddersenBase<>(g, h, group);
         // statement= (y,yBar,CL,CR,C,CBar,D,TCommits,t,zSquared,zCubed)
@@ -72,7 +78,7 @@ public class SigmaProtocolTest {
 
     @Test
     public void testSoundness() {
-        SigmaProtocolStatement<BN128Point> wrongStatement=new SigmaProtocolStatement<>(statement.getStatement(),statement.gettCommits(),statement.getT().add(statement.getZ().pow(2)),statement.getTauX(),statement.getZ());
+        SigmaProtocolStatement<BN128Point> wrongStatement=new SigmaProtocolStatement<>(statement.getStatement(),statement.gettCommits(),statement.getHL(), statement.getHR(), statement.getT().add(statement.getZ().pow(2)),statement.getTauX(),statement.getZ());
         SigmaProof proof = prover.generateProof(base, wrongStatement, witness);
         Assertions.assertThrows(VerificationFailedException.class, () -> verifier.verify(base, wrongStatement, proof));
     }

@@ -22,16 +22,19 @@ public class SigmaProtocolProver<T extends GroupElement<T>> implements Prover<Pe
         T yBar = input.getStatement().getyBar();
         T CRNew = input.getStatement().getBalanceCommitNewR();
         T D = input.getStatement().getInOutR();
+        T HR = input.getHR();
+
         BigInteger z = input.getZ();
         BigInteger zSquared = z.pow(2).mod(q);
         BigInteger zCubed = zSquared.multiply(z).mod(q);
+        BigInteger zFourth = zCubed.multiply(z).mod(q);
 
         BigInteger kR = ProofUtils.randomNumber();
         BigInteger kX = ProofUtils.randomNumber();
         T Ay = g.multiply(kX);
         T AD = g.multiply(kR);
         T ADiff = y.subtract(yBar).multiply(kR);
-        T At = D.multiply(zSquared).add(CRNew.multiply(zCubed)).multiply(kX);
+        T At = D.multiply(zSquared).add(CRNew.multiply(zCubed)).add(HR.multiply(zFourth)).multiply(kX);
 
         BigInteger challenge;
         if (salt.isPresent()) {
