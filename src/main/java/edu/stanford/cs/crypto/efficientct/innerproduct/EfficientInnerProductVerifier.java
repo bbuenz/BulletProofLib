@@ -80,12 +80,6 @@ public class EfficientInnerProductVerifier<T extends GroupElement<T>> implements
         System.out.println(challengeVector2);
         ListX<BigInteger> sleft = challengeVector.map(proof.getA()::multiply);
         ListX<BigInteger> sright = challengeVector.reverse().map(proof.getB()::multiply);
-        System.out.printf("s[0]=%s\n", challengeVector.get(0));
-        System.out.printf("s[13]=%s\n", challengeVector.get(13));
-
-        System.out.printf("sl[10]=%s\n", sleft.get(10));
-        System.out.printf("sr[77]=%s\n", sright.get(77));
-
         BigInteger prod = proof.getA().multiply(proof.getB()).mod(q);
         T g = params.getGs().commit(sleft);
 
